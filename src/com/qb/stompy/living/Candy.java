@@ -11,6 +11,7 @@ import org.jsfml.graphics.Color;
 import org.jsfml.graphics.Drawable;
 import org.jsfml.system.Time;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class Candy extends Enemy implements AnimatedEntity {
 
     private int boingedTexture = 0;
@@ -19,15 +20,7 @@ public class Candy extends Enemy implements AnimatedEntity {
     private boolean hasJumped = false, facingLeft = true, foundTarget = false, didAHop = false;
 
     private final TextureAtlas textures = assets.get("texture_candy");
-    private final Texture[][] animationTextures = {{
-            textures.get(0, 0, 16, 8),
-            textures.get(16, 0, 32, 8),
-            textures.get(32, 0, 48, 8)
-    }, {
-            textures.get(0, 8, 16, 16),
-            textures.get(16, 8, 32, 16),
-            textures.get(32, 8, 48, 16)
-    }};
+    private final Texture[][] animationTextures = textures.getMatrix(16, 8, 3, 2);
 
 
     public Candy(Color color) {
@@ -40,9 +33,6 @@ public class Candy extends Enemy implements AnimatedEntity {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        //TODO
-        //make it jump and animate
-
         //Kill
         if (currentHp <= 0) {
             kill();
@@ -57,7 +47,7 @@ public class Candy extends Enemy implements AnimatedEntity {
         //Target player
         if (getLevelScene() != null) {
             boolean shouldClearTarget = true;
-            if (getLevelScene().getPlayerCharacter() != null) {
+            if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead()) {
                 if (Math.abs(getLevelScene().getPlayerCharacter().getPositionOnMap().x - getPositionOnMap().x) < 600) {
                     if (Math.abs(getLevelScene().getPlayerCharacter().getPositionOnMap().x - getPositionOnMap().x) < 300) {
                         target = getLevelScene().getPlayerCharacter();
@@ -81,8 +71,6 @@ public class Candy extends Enemy implements AnimatedEntity {
             if (Math.abs(getPositionOnMap().x - getLevelScene().getMapOffset().x) < window.getSize().x) {
                 if (onGround) {
                     if (foundTarget && !didAHop) {
-                        //TODO
-                        //Play a sound, could be a too too trumpet
                         didAHop = true;
                         speedY = -aggroJumpStrength;
                         onGround = false;
@@ -127,7 +115,7 @@ public class Candy extends Enemy implements AnimatedEntity {
                     speedY = -jumpStrength * (float) Math.sqrt(jumpMultiplier);
                     onGround = false;
                     hasJumped = true;
-                    timeSinceJump = 0;
+                    timeSinceJump = (float)(Math.random() * 0.5);
                 }
             }
         }
@@ -174,11 +162,24 @@ public class Candy extends Enemy implements AnimatedEntity {
             }
         }
 
+        //No ankle biting
+        if (target != null) {
+            if ((L < target.gGB().left + target.gGB().width && R > target.gGB().left) ||
+                    (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
+                if (T > target.gGB().top + target.gGB().height && speedY < 0) {
+                    if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
+                        speedY = (target.gGB().top + target.gGB().height - T) / deltaTime.asSeconds();
+                        stomp();
+                    }
+                }
+            }
+        }
+
         //frame animation
         if (speedY * deltaTime.asSeconds() > 0 || timeSinceJump >= 0.75 * timeBetweenJumps / jumpMultiplier)
-            animationTextures[boingedTexture][1].apply(this);
-        else if (speedY * deltaTime.asSeconds() < 0) animationTextures[boingedTexture][2].apply(this);
-        else animationTextures[boingedTexture][0].apply(this);
+            animationTextures[1][boingedTexture].apply(this);
+        else if (speedY * deltaTime.asSeconds() < 0) animationTextures[2][boingedTexture].apply(this);
+        else animationTextures[0][boingedTexture].apply(this);
 
         moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
     }

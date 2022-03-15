@@ -1,11 +1,10 @@
 package com.qb.stompy.living;
 
-import com.qb.stompy.loaders.LoadedWorldScene;
-import com.qb.stompy.loaders.ProgressReader;
+import com.qb.stompy.scenes.LoadedWorldScene;
+import com.qb.stompy.dataReaders.LevelReader;
+import com.qb.stompy.scenes.LoadedWorldScene;
 import com.qb.stompy.objects.Enemy;
-import com.qb.stompy.objects.MapPath;
 import com.qb.stompy.objects.SolidBlock;
-import com.rubynaxela.kyanite.game.Scene;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;
@@ -21,11 +20,11 @@ import org.jsfml.window.event.KeyEvent;
 
 public class Character extends LivingGameObject implements AnimatedEntity {
     private final int animationFrames = 8;
-    private float speedX = 0, speedY = 0, timeSinceBoing = 0, jumpPressedTime = 0, animationTime = 0;
-    private final float movementSpeed = 120, jumpStrength = 500, boingStrength = jumpStrength / (float) Math.sqrt(2), animationLoopTime = 1.6f;
-    private boolean sprinting = false, sprintReleased = false, boinged = false,
-            sprintPressed = false, jumpPressed = false;
-    public boolean leftPressed = false, rightPressed = false;
+    private float speedX = 0, speedY = 0, timeSinceBoing = 0, jumpPressedTime = 0, animationTime = 0, idleTime = 0, idleActionTime = 0;
+    private final float movementSpeed = 120, jumpStrength = 500, boingStrength = jumpStrength / (float) Math.sqrt(2), animationLoopTime = 1.6f, idleTimeTillAction = 5;
+    private boolean sprinting = false, sprintReleased = false, boinged = false, isIdle = false, idleAction = false;
+    private boolean leftPressed = false, rightPressed = false, jumpPressed = false, sprintPressed = false;
+    private boolean[] idleActions;
 
     public Character() {
         Texture texture = assets.get("texture_strawberry");
@@ -35,7 +34,8 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         setOrigin(getSize().x / 2, getSize().y);
         setMaxHp(3);
         invincibilityTime = 1;
-//*
+        idleActions = new boolean[]{false, false, false};
+
         window.addKeyListener(new KeyListener() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -57,8 +57,6 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                 }
             }
         });
-
-        //*/
     }
 
     private void unlockPath(int worldNumber, int pathNumber) {
@@ -67,18 +65,26 @@ public class Character extends LivingGameObject implements AnimatedEntity {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        int frame = 0;
+        int frame = 0, idleFrame = 0, idleFrame2 = 0;
+        isIdle = true;
 
         //Controls
+        if (leftPressed || rightPressed) {
+            isIdle = false;
+            idleTime = 0;
+            idleAction = false;
+            idleActionTime = 0;
+            idleActions = new boolean[]{false, false, false};
+        }
         if (leftPressed && rightPressed) {
             speedX = 0;
             sprintReleased = false;
         } else if (leftPressed) {
             speedX = -movementSpeed;
-            frame = 1;
+            frame = 2;
         } else if (rightPressed) {
             speedX = movementSpeed;
-            frame = 2;
+            frame = 3;
         } else speedX = 0;
         if (jumpPressed) {
             jumpPressedTime += deltaTime.asSeconds();
@@ -86,6 +92,11 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                 if (onGround) onGround = false;
                 speedY = -jumpStrength;
             }
+            isIdle = false;
+            idleTime = 0;
+            idleAction = false;
+            idleActionTime = 0;
+            idleActions = new boolean[]{false, false, false};
         } else jumpPressedTime = 0;
         if (sprintPressed) {
             if (sprintReleased)
@@ -119,6 +130,79 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         }
         animationTime += deltaTime.asSeconds();
         if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
+        if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
+        idleAction = idleTime >= idleTimeTillAction;
+        if (idleAction) idleActionTime -= deltaTime.asSeconds();
+        if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
+            int randNumb = (int) (15 * Math.random());
+            System.out.println(randNumb);
+            if (randNumb < 10) {
+                idleActionTime = 0.5f;
+                idleActions[0] = true;
+            } else if (randNumb < 14) {
+                idleActionTime = 3.6f;
+                idleActions[1] = true;
+            } else {
+                idleActionTime = 5;
+                idleActions[2] = true;
+            }
+        }
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        if (idleActions[0]) { //Blink
+            if (idleActionTime > 0.5)
+                idleFrame = 1;
+            else if (idleActionTime > 0.4)
+                idleFrame = 2;
+            else if (idleActionTime > 0.3)
+                idleFrame = 3;
+            else if (idleActionTime > 0.2)
+                idleFrame = 2;
+            else if (idleActionTime > 0.1)
+                idleFrame = 1;
+            if (idleActionTime <= 0) {
+                idleAction = false;
+                idleTime = 2 * (float)Math.random();
+                idleActions[0] = false;
+            }
+        }
+        else if (idleActions[1]) { //Look around
+            if (idleActionTime > 2.4) {
+                idleFrame = 1;
+                idleFrame2 = 1;
+            }
+            if (idleActionTime > 0 && idleActionTime < 1.2) {
+                idleFrame = 2;
+                idleFrame2 = 1;
+            }
+            if (idleActionTime <= 0) {
+                idleAction = false;
+                idleTime = 2 * (float)Math.random();
+                idleActions[1] = false;
+            }
+        }
+        else if (idleActions[2]) { //Yawn
+            if (idleActionTime > 4.8)
+                idleFrame = 4;
+            else if (idleActionTime > 4.6)
+                idleFrame = 5;
+            else if (idleActionTime > 4.4)
+                idleFrame = 6;
+            else if (idleActionTime > 0.8)
+                idleFrame = 7;
+            else if (idleActionTime > 0.6)
+                idleFrame = 6;
+            else if (idleActionTime > 0.4)
+                idleFrame = 5;
+            else if (idleActionTime > 0.2)
+                idleFrame = 4;
+            if (idleActionTime <= 0) {
+                idleAction = false;
+                idleTime = 2 * (float)Math.random();
+                idleActions[2] = false;
+            }
+        }
+        setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
 
         //Loop Variables
         float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
@@ -135,29 +219,6 @@ public class Character extends LivingGameObject implements AnimatedEntity {
 
         //Checking collisions
         for (final Drawable object : window.getScene()) {
-            //Terrain collision
-            if (object instanceof final SolidBlock sBlock) {
-                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
-                //Vertical Collision
-                if (L < R2 && R > L2) {
-                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
-                        speedY = (B2 - T) / deltaTime.asSeconds();
-                    }
-                    if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
-                        speedY = (T2 - B) / deltaTime.asSeconds();
-                        onGround = true;
-                    }
-                }
-                //Horizontal Collision
-                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
-                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
-                        speedX = (R2 - L) / deltaTime.asSeconds();
-                    }
-                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
-                        speedX = (L2 - R) / deltaTime.asSeconds();
-                    }
-                }
-            }
             //Enemies collision
             if (object instanceof final Enemy en) {
                 if (en instanceof final RoundEnemy ren) {
@@ -228,24 +289,52 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                     }
                 }
             }
+            //Terrain collision
+            if (object instanceof final SolidBlock sBlock) {
+                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
+                //Vertical Collision
+                if (L < R2 && R > L2) {
+                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
+                        speedY = (B2 - T) / deltaTime.asSeconds();
+                    }
+                    if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
+                        speedY = (T2 - B) / deltaTime.asSeconds();
+                        onGround = true;
+                    }
+                }
+                //Horizontal Collision
+                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
+                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
+                        speedX = (R2 - L) / deltaTime.asSeconds();
+                    }
+                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
+                        speedX = (L2 - R) / deltaTime.asSeconds();
+                    }
+                }
+            }
         }
+
+        //Last updates
         if (speedY > 0) onGround = false;
-        setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
+        if (!onGround) animationFrame = 0;
+        if (!idleAction) setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
 
         if(/*character got to a certain point on map*/getPositionOnMap().x >= getLevelScene().getMapSize().x - 200) {
+            //unlock the next path in the same world
             unlockPath(getLevelScene().getWorldNumber(), getLevelScene().getLevelNumber() + 1);
-            //unlock the first path from next world
-            if (/*getLevelScene().getLevelNumber() == getWorldScene().getLevelPoints().size() - 2 CHANGE getWorldScene, it's null*/false) {
-                if (/*world is not the last one*/true) {
-                    //unlock first path in next world
+            if (getLevelScene().getLevelNumber() == assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().get(getLevelScene().getWorldNumber()).getLevels().size() - 1) {
+                //play a world's end cutscene maybe
+                if (getLevelScene().getWorldNumber() != assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().size() - 1) {
+                    //unlock the first path in next world
 
-                } else ; //play a cutscene or something, idk
+                }
             }
             //return to the world
             int targetLevel = getLevelScene().getLevelNumber();
             window.setScene(new LoadedWorldScene(getLevelScene().getWorldNumber()));
             window.<LoadedWorldScene>getScene().placeCharacterAtLevel(targetLevel);
         }
+
         moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
     }
 }

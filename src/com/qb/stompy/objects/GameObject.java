@@ -1,7 +1,7 @@
 package com.qb.stompy.objects;
 
-import com.qb.stompy.loaders.LoadedLevelScene;
-import com.qb.stompy.loaders.LoadedWorldScene;
+import com.qb.stompy.scenes.LoadedLevelScene;
+import com.qb.stompy.scenes.LoadedWorldScene;
 import com.rubynaxela.kyanite.game.GameContext;
 import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.util.Vec2;

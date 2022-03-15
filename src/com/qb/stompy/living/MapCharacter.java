@@ -1,9 +1,10 @@
 package com.qb.stompy.living;
 
-import com.qb.stompy.loaders.LevelReader;
-import com.qb.stompy.loaders.LoadedLevelScene;
-import com.qb.stompy.loaders.LoadedWorldScene;
-import com.qb.stompy.loaders.ProgressReader;
+import com.qb.stompy.HUDs.LevelLaunchHUD;
+import com.qb.stompy.scenes.LoadedLevelScene;
+import com.qb.stompy.scenes.LoadedWorldScene;
+import com.qb.stompy.dataReaders.LevelReader;
+import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.objects.MapObject;
 import com.qb.stompy.objects.MapPoint;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
@@ -18,7 +19,6 @@ import org.jsfml.system.Vector2f;
 import org.jsfml.window.event.KeyEvent;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MapCharacter extends MapObject implements AnimatedEntity {
     private int textureFace = 0;
@@ -27,44 +27,6 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
     private final float movementSpeed = 120, animationLoopTime = 1.6f;
     private boolean leftPressed = false, rightPressed = false, upPressed = false, downPressed = false,
             sprinting = false, sprintPressed = false, sprintReleased = false, interaction = false;
-    /*private final TextureAtlas atlas = assets.get("texture_strawberry");
-    private final Texture[][] textures = {{
-            atlas.get(0, 0, 32, 32),
-            atlas.get(32, 0, 64, 32),
-            atlas.get(64, 0, 96, 32),
-            atlas.get(96, 0, 128, 32),
-            atlas.get(128, 0, 160, 32),
-            atlas.get(160, 0, 192, 32),
-            atlas.get(192, 0, 224, 32),
-            atlas.get(224, 0, 256, 32)
-    },{
-            atlas.get(0, 32, 32, 64),
-            atlas.get(32, 32, 64, 64),
-            atlas.get(64, 32, 96, 64),
-            atlas.get(96, 32, 128, 64),
-            atlas.get(128, 32, 160, 64),
-            atlas.get(160, 32, 192, 64),
-            atlas.get(192, 32, 224, 64),
-            atlas.get(224, 32, 256, 64)
-    },{
-            atlas.get(0, 64, 32, 96),
-            atlas.get(32, 64, 64, 96),
-            atlas.get(64, 64, 96, 96),
-            atlas.get(96, 64, 128, 96),
-            atlas.get(128, 64, 160, 96),
-            atlas.get(160, 64, 192, 96),
-            atlas.get(192, 64, 224, 96),
-            atlas.get(224, 64, 256, 96)
-    },{
-            atlas.get(0, 96, 32, 128),
-            atlas.get(32, 96, 64, 128),
-            atlas.get(64, 96, 96, 128),
-            atlas.get(96, 96, 128, 128),
-            atlas.get(128, 96, 160, 128),
-            atlas.get(160, 96, 192, 128),
-            atlas.get(192, 96, 224, 128),
-            atlas.get(224, 96, 256, 128)
-    }};*/
 
     public MapCharacter() {
         Texture texture = assets.get("texture_strawberry");
@@ -105,14 +67,14 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
         //Controls
         if (leftPressed && !rightPressed) {
             speedX = -movementSpeed;
-            textureFace = 1;
+            textureFace = 2;
         } else if (!leftPressed && rightPressed) {
             speedX = movementSpeed;
-            textureFace = 2;
+            textureFace = 3;
         } else speedX = 0;
         if (upPressed && !downPressed) {
             speedY = -movementSpeed;
-            textureFace = 3;
+            textureFace = 1;
         } else if (!upPressed && downPressed) {
             speedY = movementSpeed;
             textureFace = 0;
@@ -133,14 +95,15 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
         }
 
         //Loop Variables
-        int frame = (int)(animationFrames * animationTime / animationLoopTime);
+        int frame = 0;
+        if (speedY == 0) frame += (int)(animationFrames * animationTime / animationLoopTime);
         float X = gGB().left + getOrigin().x, Y = gGB().top + getOrigin().y, movementX = speedX, movementY = speedY;
 
         //Updating data
         animationTime += deltaTime.asSeconds();
         if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
-        if (speedX == 0 && (textureFace == 1 || textureFace == 2)) frame = 0;
-        if (speedY == 0 && (textureFace == 0 || textureFace == 3)) frame = 0;
+        if (speedX == 0 && (textureFace == 2 || textureFace == 3)) frame = 0;
+        if (speedY == 0 && (textureFace == 0 || textureFace == 1)) frame = 0;
 
         //Preventing out of path
         if (getWorldScene() != null) {
@@ -255,10 +218,14 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
                         else if (i == points.size() - 1) {
                             if (i != assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().size() - 1) {
                                 window.setScene(new LoadedWorldScene(getWorldScene().getWorldNumber() + 1));
+                            } else {
+                                //play a final cutscene or something
                             }
                         }
                         //Any level
                         else {
+                            //TODO place an HUD
+//                            window.setHUD(new LevelLaunchHUD(getWorldScene().getWorldNumber(), i - 1));
                             window.setScene(new LoadedLevelScene(getWorldScene().getWorldNumber(), i - 1));
                         }
                     }

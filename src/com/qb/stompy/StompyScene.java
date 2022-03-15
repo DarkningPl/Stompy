@@ -2,6 +2,7 @@ package com.qb.stompy;
 
 import com.qb.stompy.living.*;
 import com.qb.stompy.living.Character;
+import com.qb.stompy.buttons.GameButton;
 import com.qb.stompy.objects.GameObject;
 import com.qb.stompy.objects.MapObject;
 import com.qb.stompy.objects.SolidBlock;
@@ -60,7 +61,7 @@ public class StompyScene extends Scene {
     protected void init() {
         //
         MapObject background = new MapObject();
-        Texture sky = getContext().getAssetsBundle().get("sky");
+        Texture sky = getContext().getAssetsBundle().get("texture_sky");
         sky.apply(background);
         background.setSize(mapSize);
         add(background);
@@ -79,9 +80,9 @@ public class StompyScene extends Scene {
         }
 
 
-        Character character = new Character();
-        character.setPositionOnMap(60, 460);
-        add(character);
+//        Character character = new Character();
+//        character.setPositionOnMap(60, 460);
+//        add(character);
 
 
         //Blob testEn = new Blob();
@@ -177,6 +178,11 @@ public class StompyScene extends Scene {
         nutRectActBox.setPosition(testDonut.getSquareHitbox().getPosition());
         nutRectActBox.setFillColor(new Color(0, 255, 0, 128));
         //add(nutRectActBox);
+
+//
+//        GameButton button = new GameButton("butt", Vec2.i(64, 32));
+//        button.setPosition(Vec2.divide(Vec2.f(getContext().getWindow().getSize()), 2));
+//        add(button);
     }
 
     @Override

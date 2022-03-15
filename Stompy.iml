@@ -10,11 +10,11 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/kyanite-1.8.0-beta.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/kyanite-1.8.0-beta.2.2.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/kyanite-1.8.0-beta.1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/kyanite-1.8.0-beta.2.2.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>

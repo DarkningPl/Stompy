@@ -1,6 +1,6 @@
 package com.qb.stompy.objects;
 
-import com.qb.stompy.loaders.ProgressReader;
+import com.qb.stompy.dataReaders.ProgressReader;
 import com.rubynaxela.kyanite.game.GameContext;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import org.jsfml.graphics.Color;

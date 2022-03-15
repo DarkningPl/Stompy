@@ -55,7 +55,7 @@ public class Cupcake extends Enemy implements AnimatedEntity {
         //Target player
         if (getLevelScene() != null) {
             boolean shouldClearTarget = true;
-            if (getLevelScene().getPlayerCharacter() != null) {
+            if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead()) {
                 Character character = getLevelScene().getPlayerCharacter();
                 if (character.getPositionOnMap().y <= getPositionOnMap().y || didAHop) {
                     if (Math.abs(character.getPositionOnMap().x - getPositionOnMap().x) < 600) {

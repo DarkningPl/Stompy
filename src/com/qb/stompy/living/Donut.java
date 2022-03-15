@@ -131,7 +131,7 @@ public class Donut extends RoundEnemy {
                     if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
                         speedY = (B2 - T) / deltaTime.asSeconds();
                     }
-                    if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
+                    if (B <= T2 /* + 1 //TODO // test this sh!t */ && speedY * deltaTime.asSeconds() >= T2 - B) {
                         speedY = (T2 - B) / deltaTime.asSeconds();
                         onGround = true;
                     }
