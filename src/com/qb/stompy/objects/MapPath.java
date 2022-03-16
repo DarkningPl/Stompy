@@ -11,7 +11,7 @@ public class MapPath extends MapObject {
     public MapPath(int world, int level) {
         worldNumber = world;
         levelNumber = level;
-        if (!GameContext.getInstance().getAssetsBundle().<DataAsset>get("maps").convertTo(ProgressReader.class).getWorlds().get(getWorldNumber()).isPathUnlocked(getLevelNumber())) {
+        if (!GameContext.getInstance().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().get(getWorldNumber()).isPathUnlocked(getLevelNumber())) {
             setFillColor(new Color(255, 60, 60));
         }
     }

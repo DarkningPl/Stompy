@@ -1,10 +1,13 @@
 package com.qb.stompy.scenes;
 
 import com.qb.stompy.dataReaders.LevelReader;
+import com.qb.stompy.dataReaders.World1Reader;
+import com.qb.stompy.dataReaders.World2Reader;
 import com.qb.stompy.living.MapCharacter;
 import com.qb.stompy.objects.*;
 import com.rubynaxela.kyanite.game.GameContext;
 import com.rubynaxela.kyanite.game.Scene;
+import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.assets.TextureAtlas;
@@ -24,7 +27,8 @@ public class LoadedWorldScene extends Scene {
     private final int worldNumber;
     private final Vector2f mapSize;
     private Vector2f mapOffset = Vector2f.ZERO;
-    private final LevelReader.LRWorld worldData;
+    private final Text worldNumberText = new Text(new Font(getContext().getAssetsBundle().get("font_mc"), 24));
+    private final Text worldNameText = new Text(new Font(getContext().getAssetsBundle().get("font_mc"), 24));
     private final MapCharacter character = new MapCharacter();
     private final ArrayList<MapPoint> points = new ArrayList<>();
     private final ArrayList<MapPoint> levelPoints = new ArrayList<>();
@@ -34,8 +38,23 @@ public class LoadedWorldScene extends Scene {
 
     public LoadedWorldScene(int world) {
         worldNumber = world;
-        worldData = GameContext.getInstance().getAssetsBundle().<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().get(worldNumber);
-        mapSize = new Vector2f(worldData.getSize().x, worldData.getSize().y);
+        AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
+        float size_x, size_y;
+        switch (world) {
+            case 0 -> {
+                size_x = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getSize().x;
+                size_y = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getSize().y;
+            }
+            case 1 -> {
+                size_x = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getSize().x;
+                size_y = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getSize().y;
+            }
+            default -> {
+                size_x = 0;
+                size_y = 0;
+            }
+        }
+        mapSize = new Vector2f(size_x, size_y);
     }
 
     public int getWorldNumber() {
@@ -139,24 +158,27 @@ public class LoadedWorldScene extends Scene {
         character.setPositionOnMap(getLevelPoints().get(level + 1).getPositionOnMap());
     }
 
-    @Override
-    protected void init() {
+    public void loadWorld0() {
+        World1Reader world = GameContext.getInstance().getAssetsBundle().<DataAsset>get("world_0").convertTo(World1Reader.class);
+
+        worldNumberText.setText("World " + 1);
+        worldNameText.setText(world.getWorldName());
+
         //Background
-        setBackgroundTexture(GameContext.getInstance().getAssetsBundle().get("texture_" + worldData.getTextureName()));
-        MapBackground back = new MapBackground(Vec2.f(worldData.getBackgroundTextureSize().x, worldData.getBackgroundTextureSize().y));
-        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + worldData.getTextureName()).apply(back);
+        MapBackground back = new MapBackground(Vec2.f(world.getBackgroundTextureSize().x, world.getBackgroundTextureSize().y));
+        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + world.getTextureName()).apply(back);
 
         //Character
-        character.setPositionOnMap(worldData.getStartPoint().x, worldData.getStartPoint().y);
+        character.setPositionOnMap(world.getStartPoint().x, world.getStartPoint().y);
 
         //Start point
         MapPoint start = new MapPoint(2);
-        start.setPositionOnMap(worldData.getStartPoint().x, worldData.getStartPoint().y);
+        start.setPositionOnMap(world.getStartPoint().x, world.getStartPoint().y);
         levelPoints.add(start);
 
         //Levels
-        for (int i = 0; i < worldData.getLevels().size(); i++) {
-            LevelReader.LRLevel lvl = worldData.getLevels().get(i);
+        for (int i = 0; i < world.getLevels().size(); i++) {
+            World1Reader.W1Level lvl = world.getLevels().get(i);
             MapPoint crossroad = new MapPoint(1);
             MapPoint level = new MapPoint((float)Math.sqrt(2));
             GameText levelNumber = new GameText((getWorldNumber() + 1) + " - " + (i + 1), new Font(getContext().getAssetsBundle().get("font_mc"), 24));
@@ -168,18 +190,40 @@ public class LoadedWorldScene extends Scene {
             levelPoints.add(level);
             levelNumbers.add(levelNumber);
             if (i == 0) makePath(start.getPositionOnMap(), crossroad.getPositionOnMap(), i);
-            else makePath(Vec2.f(worldData.getLevels().get(i - 1).getPosition().x, worldData.getLevels().get(i - 1).getPosition().y), crossroad.getPositionOnMap(), i);
+            else makePath(Vec2.f(world.getLevels().get(i - 1).getPosition().x, world.getLevels().get(i - 1).getPosition().y), crossroad.getPositionOnMap(), i);
             makePath(crossroad.getPositionOnMap(), level.getPositionOnMap(), i);
         }
 
         //End point
         MapPoint end = new MapPoint(2);
-        end.setPositionOnMap(worldData.getEndPoint().x, worldData.getEndPoint().y);
+        end.setPositionOnMap(world.getEndPoint().x, world.getEndPoint().y);
         levelPoints.add(end);
-        if (worldData.getLevels().size() > 0) makePath(Vec2.f(worldData.getLevels().get(worldData.getLevels().size() - 1).getPosition().x, worldData.getLevels().get(worldData.getLevels().size() - 1).getPosition().y), end.getPositionOnMap(), worldData.getLevels().size());
+        if (world.getLevels().size() > 0) makePath(Vec2.f(world.getLevels().get(world.getLevels().size() - 1).getPosition().x, world.getLevels().get(world.getLevels().size() - 1).getPosition().y), end.getPositionOnMap(), world.getLevels().size());
         else makePath(start.getPositionOnMap(), end.getPositionOnMap(), 0);
 
         add(back);
+    }
+
+    public void loadWorld1() {
+
+    }
+
+    public void loadWorld2() {
+
+    }
+
+     public void loadWorld3() {
+
+     }
+
+    @Override
+    protected void init() {
+        switch (worldNumber) {
+            case 0 -> loadWorld0();
+            case 1 -> loadWorld1();
+            case 2 -> loadWorld2();
+            case 3 -> loadWorld3();
+        }
         for (MapObject path : paths) {
             add(path);
         }
@@ -192,6 +236,12 @@ public class LoadedWorldScene extends Scene {
         for (GameText number : levelNumbers) {
             add(number);
         }
+        worldNumberText.setAlignment(Text.Alignment.CENTER);
+        worldNumberText.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 40);
+        worldNameText.setAlignment(Text.Alignment.CENTER);
+        worldNameText.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 80);
+        add(worldNameText);
+        add(worldNumberText);
         add(character);
     }
 

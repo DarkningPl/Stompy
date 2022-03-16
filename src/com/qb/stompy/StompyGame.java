@@ -1,5 +1,6 @@
 package com.qb.stompy;
 
+import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.scenes.LoadedWorldScene;
 import com.rubynaxela.kyanite.game.Game;
 import com.rubynaxela.kyanite.game.assets.*;
@@ -33,16 +34,19 @@ public class StompyGame extends Game {
         assets.register("butt", new TextureAtlas("assets/images/test_button.png"));
         assets.register("button_go", new TextureAtlas("assets/images/button_go.png"));
 
+        assets.register("worlds", new DataAsset("assets/data/worlds_data.json"));
+        for (int i = 0; i < getContext().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().size(); i++) {
+            assets.register("world_" + i, new DataAsset("assets/data/world_" + i + "_data.json"));
+        }
         assets.register("levels", new DataAsset("assets/data/levels_data.json"));
-        assets.register("maps", new DataAsset("assets/data/maps_data.json"));
         //assets.register("character", new DataAsset("assets/data/character_data.json"));
 
         //DataFile dat = new DataFile("assets/data/test.txt");
         //dat.append("" + 32);
         //System.out.println(dat.read());
 
-//        window.setScene(new LoadedWorldScene(0));
+        window.setScene(new LoadedWorldScene(0));
 //        window.setScene(new LoadedLevelScene(0, 2));
-        window.setScene(new StompyScene());
+//        window.setScene(new StompyScene());
     }
 }

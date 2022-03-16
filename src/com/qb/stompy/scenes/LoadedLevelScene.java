@@ -1,6 +1,9 @@
 package com.qb.stompy.scenes;
 
 import com.qb.stompy.dataReaders.LevelReader;
+import com.qb.stompy.dataReaders.World1Reader;
+import com.qb.stompy.dataReaders.World2Reader;
+import com.qb.stompy.dataReaders.WorldReader;
 import com.qb.stompy.living.*;
 import com.qb.stompy.living.Character;
 import com.qb.stompy.objects.GameObject;
@@ -8,6 +11,7 @@ import com.qb.stompy.objects.MapBackground;
 import com.qb.stompy.objects.SolidBlock;
 import com.rubynaxela.kyanite.game.GameContext;
 import com.rubynaxela.kyanite.game.Scene;
+import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.util.Vec2;
@@ -21,14 +25,28 @@ public class LoadedLevelScene extends Scene {
     private boolean paused = false;
     private final Vector2f mapSize;
     private Vector2f mapOffset = Vec2.f(0, 0);
-    private final LevelReader.LRLevel levelData;
     private final Character character = new Character();
 
     public LoadedLevelScene(int world, int level) {
         levelNumber = level;
         worldNumber = world;
-        levelData = GameContext.getInstance().getAssetsBundle().<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().get(world).getLevels().get(level);
-        mapSize = Vec2.f(levelData.getSize().x, levelData.getSize().y);
+        AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
+        float size_x, size_y;
+        switch (world) {
+            case 0 -> {
+                size_x = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(level).getSize().x;
+                size_y = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(level).getSize().y;
+            }
+            case 1 -> {
+                size_x = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getLevels().get(level).getSize().x;
+                size_y = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getLevels().get(level).getSize().y;
+            }
+            default -> {
+                size_x = 0;
+                size_y = 0;
+            }
+        }
+        mapSize = Vec2.f(size_x, size_y);
     }
 
     public Vector2f getMapSize() {
@@ -53,22 +71,21 @@ public class LoadedLevelScene extends Scene {
 
     public void unpause() { paused = false; }
 
-    @Override
-    protected void init() {
-        //Background
-        //setBackgroundTexture(GameContext.getInstance().getAssetsBundle().get("texture_" + levelData.textureName));
-        MapBackground back = new MapBackground(Vec2.f(levelData.getBackgroundTextureSize().x, levelData.getBackgroundTextureSize().y));
-        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + levelData.getTextureName()).apply(back);
-        add(back);
+    private void loadLevelFromWorld0() {
+        World1Reader.W1Level level = GameContext.getInstance().getAssetsBundle().<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(levelNumber);
 
+        //Background
+        MapBackground background = new MapBackground(Vec2.f(level.getBackgroundTextureSize().x, level.getBackgroundTextureSize().y));
+        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + level.getTextureName()).apply(background);
+        add(background);
 
         //Character
-        character.setPositionOnMap(levelData.getCharacterPosition().x, levelData.getCharacterPosition().y);
+        character.setPositionOnMap(level.getCharacterPosition().x, level.getCharacterPosition().y);
         add(character);
 
         //Solid Blocks
-        for (int i = 0; i < levelData.getBlocks().size(); i++) {
-            LevelReader.LRBlock blockData = levelData.getBlocks().get(i);
+        for (int i = 0; i < level.getBlocks().size(); i++) {
+            World1Reader.W1Block blockData = level.getBlocks().get(i);
             SolidBlock block = new SolidBlock(Vec2.f(blockData.getSize().x, blockData.getSize().y));
             block.setPositionOnMap(blockData.getPosition().x, blockData.getPosition().y);
             GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + blockData.getTextureName()).apply(block);
@@ -76,35 +93,58 @@ public class LoadedLevelScene extends Scene {
         }
 
         //Candies
-        for (int i = 0; i < levelData.getCandies().size(); i++) {
-            LevelReader.LRCandy candyData = levelData.getCandies().get(i);
+        for (int i = 0; i < level.getCandies().size(); i++) {
+            World1Reader.W1Candy candyData = level.getCandies().get(i);
             Candy candy = new Candy(new Color(candyData.getColor().r, candyData.getColor().g, candyData.getColor().b));
             candy.setPositionOnMap(candyData.getPosition().x, candyData.getPosition().y);
             add(candy);
         }
 
         //Chocolates
-        for (int i = 0; i < levelData.getChocolates().size(); i++) {
-            LevelReader.LRChocolate chocolateData = levelData.getChocolates().get(i);
+        for (int i = 0; i < level.getChocolates().size(); i++) {
+            World1Reader.W1Chocolate chocolateData = level.getChocolates().get(i);
             Chocolate chocolate = new Chocolate(chocolateData.getHp());
             chocolate.setPositionOnMap(chocolateData.getPosition().x, chocolateData.getPosition().y);
             add(chocolate);
         }
 
         //Cupcakes
-        for (int i = 0; i < levelData.getCupcakes().size(); i++) {
-            LevelReader.LRCupcake cupcakeData = levelData.getCupcakes().get(i);
+        for (int i = 0; i < level.getCupcakes().size(); i++) {
+            World1Reader.W1Cupcake cupcakeData = level.getCupcakes().get(i);
             Cupcake cupcake = new Cupcake();
             cupcake.setPositionOnMap(cupcakeData.getPosition().x, cupcakeData.getPosition().y);
             add(cupcake);
         }
 
         //Pizzas
-        for (int i = 0; i < levelData.getPizzas().size(); i++) {
-            LevelReader.LRPizza pizzaData = levelData.getPizzas().get(i);
+        for (int i = 0; i < level.getPizzas().size(); i++) {
+            World1Reader.W1Pizza pizzaData = level.getPizzas().get(i);
             Pizza pizza = new Pizza();
             pizza.setPositionOnMap(pizzaData.getPosition().x, pizzaData.getPosition().y);
             add(pizza);
+        }
+    }
+
+    private void loadLevelFromWorld1() {
+
+    }
+
+    private void loadLevelFromWorld2() {
+
+    }
+
+    private void loadLevelFromWorld3() {
+
+    }
+
+    @Override
+    protected void init() {
+
+        switch (worldNumber) {
+            case 0 -> loadLevelFromWorld0();
+            case 1 -> loadLevelFromWorld1();
+            case 2 -> loadLevelFromWorld2();
+            case 3 -> loadLevelFromWorld3();
         }
 
         bringToTop(character);
@@ -115,17 +155,22 @@ public class LoadedLevelScene extends Scene {
         float offsetX = 0, offsetY = 0;
         Window window = GameContext.getInstance().getWindow();
         if (!paused) {
-            if (character.getPositionOnMap().x > getContext().getWindow().getSize().x / 2.0f) {
-                if (character.getPositionOnMap().x < getMapSize().x - getContext().getWindow().getSize().x / 2.0f)
-                    offsetX = character.getPositionOnMap().x - getContext().getWindow().getSize().x / 2.0f;
-                else
-                    offsetX = getMapSize().x - getContext().getWindow().getSize().x;
+            if (getContext().getWindow().getSize().x < getMapSize().x) {
+                if (character.getPositionOnMap().x > getContext().getWindow().getSize().x / 2.0f) {
+                    if (character.getPositionOnMap().x < getMapSize().x - getContext().getWindow().getSize().x / 2.0f)
+                        offsetX = character.getPositionOnMap().x - getContext().getWindow().getSize().x / 2.0f;
+                    else
+                        offsetX = getMapSize().x - getContext().getWindow().getSize().x;
+                }
             }
-//            if (character.getPositionOnMap().y > getContext().getWindow().getSize().y / 2.0f) {
-//                if (character.getPositionOnMap().y < getMapSize().y - getContext().getWindow().getSize().y / 2.0f)
-//                    offsetY = character.getPositionOnMap().y - getContext().getWindow().getSize().y / 2.0f;
-//                else
-//                    offsetY = getMapSize().y - getContext().getWindow().getSize().x; }
+            if (getContext().getWindow().getSize().y < getMapSize().y) {
+                if (character.getPositionOnMap().y > getContext().getWindow().getSize().y / 2.0f) {
+                    if (character.getPositionOnMap().y < getMapSize().y - getContext().getWindow().getSize().y / 2.0f)
+                        offsetY = character.getPositionOnMap().y - getContext().getWindow().getSize().y / 2.0f;
+                    else
+                        offsetY = getMapSize().y - getContext().getWindow().getSize().x;
+                }
+            }
             mapOffset = Vec2.f(offsetX, offsetY);
 
             for (final Drawable obj : getContext().getWindow().getScene()) {

@@ -19,6 +19,7 @@ import org.jsfml.system.Time;
 import org.jsfml.window.event.KeyEvent;
 
 public class Character extends LivingGameObject implements AnimatedEntity {
+    private int frame = 0, idleFrame = 0, idleFrame2 = 0;
     private final int animationFrames = 8;
     private float speedX = 0, speedY = 0, timeSinceBoing = 0, jumpPressedTime = 0, animationTime = 0, idleTime = 0, idleActionTime = 0;
     private final float movementSpeed = 120, jumpStrength = 500, boingStrength = jumpStrength / (float) Math.sqrt(2), animationLoopTime = 1.6f, idleTimeTillAction = 5;
@@ -63,12 +64,7 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         //overwrite value in progress data at said numbers
     }
 
-    @Override
-    public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        int frame = 0, idleFrame = 0, idleFrame2 = 0;
-        isIdle = true;
-
-        //Controls
+    private void steerCharacter(Time deltaTime) {
         if (leftPressed || rightPressed) {
             isIdle = false;
             idleTime = 0;
@@ -107,48 +103,9 @@ public class Character extends LivingGameObject implements AnimatedEntity {
             sprinting = false;
             sprintReleased = true;
         }
+    }
 
-        //Updating data
-        if (currentHp <= 0) kill();
-        if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
-        if (boinged) {
-            timeSinceBoing += deltaTime.asSeconds();
-            if (timeSinceBoing >= 0.1) {
-                boinged = false;
-                timeSinceBoing = 0;
-            }
-        }
-        if (recentlyDamaged) {
-            invincibilityTime -= deltaTime.asSeconds();
-            if (invincibilityTime < 0) invincibilityTime = 0;
-            setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
-            if (invincibilityTime == 0) {
-                recentlyDamaged = false;
-                canBeDamaged = true;
-                invincibilityTime = 1;
-            }
-        }
-        animationTime += deltaTime.asSeconds();
-        if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
-        if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
-        idleAction = idleTime >= idleTimeTillAction;
-        if (idleAction) idleActionTime -= deltaTime.asSeconds();
-        if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
-            int randNumb = (int) (15 * Math.random());
-            System.out.println(randNumb);
-            if (randNumb < 10) {
-                idleActionTime = 0.5f;
-                idleActions[0] = true;
-            } else if (randNumb < 14) {
-                idleActionTime = 3.6f;
-                idleActions[1] = true;
-            } else {
-                idleActionTime = 5;
-                idleActions[2] = true;
-            }
-        }
-
-        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    private void animateIdle() {
         if (idleActions[0]) { //Blink
             if (idleActionTime > 0.5)
                 idleFrame = 1;
@@ -202,6 +159,60 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                 idleActions[2] = false;
             }
         }
+    }
+
+    @Override
+    public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
+        frame = 0;
+        idleFrame = 0;
+        idleFrame2 = 0;
+        isIdle = true;
+
+        //Controls
+        steerCharacter(deltaTime);
+
+        //Updating data
+        if (currentHp <= 0) kill();
+        if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
+        if (boinged) {
+            timeSinceBoing += deltaTime.asSeconds();
+            if (timeSinceBoing >= 0.1) {
+                boinged = false;
+                timeSinceBoing = 0;
+            }
+        }
+        if (recentlyDamaged) {
+            invincibilityTime -= deltaTime.asSeconds();
+            if (invincibilityTime < 0) invincibilityTime = 0;
+            setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
+            if (invincibilityTime == 0) {
+                recentlyDamaged = false;
+                canBeDamaged = true;
+                invincibilityTime = 1;
+            }
+        }
+        animationTime += deltaTime.asSeconds();
+        if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
+        if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
+        idleAction = idleTime >= idleTimeTillAction;
+        if (idleAction) idleActionTime -= deltaTime.asSeconds();
+        if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
+            int randNumb = (int) (15 * Math.random());
+            System.out.println(randNumb);
+            if (randNumb < 10) {
+                idleActionTime = 0.5f;
+                idleActions[0] = true;
+            } else if (randNumb < 14) {
+                idleActionTime = 3.6f;
+                idleActions[1] = true;
+            } else {
+                idleActionTime = 5;
+                idleActions[2] = true;
+            }
+        }
+
+        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        animateIdle();
         setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
 
         //Loop Variables
@@ -320,15 +331,16 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         if (!idleAction) setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
 
         if(/*character got to a certain point on map*/getPositionOnMap().x >= getLevelScene().getMapSize().x - 200) {
-            //unlock the next path in the same world
-            unlockPath(getLevelScene().getWorldNumber(), getLevelScene().getLevelNumber() + 1);
-            if (getLevelScene().getLevelNumber() == assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().get(getLevelScene().getWorldNumber()).getLevels().size() - 1) {
-                //play a world's end cutscene maybe
-                if (getLevelScene().getWorldNumber() != assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().size() - 1) {
-                    //unlock the first path in next world
-
-                }
-            }
+            //TODO update conditions to match new readers
+//            //unlock the next path in the same world
+//            unlockPath(getLevelScene().getWorldNumber(), getLevelScene().getLevelNumber() + 1);
+//            if (getLevelScene().getLevelNumber() == assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().get(getLevelScene().getWorldNumber()).getLevels().size() - 1) {
+//                //play a world's end cutscene maybe
+//                if (getLevelScene().getWorldNumber() != assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().size() - 1) {
+//                    //unlock the first path in next world
+//
+//                }
+//            }
             //return to the world
             int targetLevel = getLevelScene().getLevelNumber();
             window.setScene(new LoadedWorldScene(getLevelScene().getWorldNumber()));
