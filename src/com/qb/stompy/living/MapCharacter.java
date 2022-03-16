@@ -28,10 +28,10 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
 
     public MapCharacter() {
         Texture texture = assets.get("texture_strawberry");
-        texture.apply(this);
-        setTextureRect(new IntRect(0, 0, 32, 32));
-        setSize(Vec2.f(32, 32));
-        setOrigin(getSize().x / 2, getSize().y);
+        texture.apply(this.mainBody);
+        mainBody.setTextureRect(new IntRect(0, 0, 32, 32));
+        mainBody.setSize(Vec2.f(32, 32));
+        setOrigin(mainBody.getSize().x / 2, mainBody.getSize().y);
 
         window.addKeyListener(new KeyListener() {
             @Override
@@ -235,7 +235,7 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
             if (textureFace == 0 || textureFace == 1) frame = 0;
         }
         if (speedX == 0 && (textureFace == 2 || textureFace == 3)) frame = 0;
-        setTextureRect(new IntRect(frame * 32, textureFace * 32, 32, 32));
+        mainBody.setTextureRect(new IntRect(frame * 32, textureFace * 32, 32, 32));
 
         moveOnMap(movementX * deltaTime.asSeconds(), movementY * deltaTime.asSeconds());
     }

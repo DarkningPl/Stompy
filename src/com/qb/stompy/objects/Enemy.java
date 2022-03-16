@@ -14,6 +14,8 @@ public abstract class Enemy extends LivingGameObject {
         return stompable;
     }
 
+    public boolean isActive() { return active; }
+
     public void stomp() {
         damage(1);
     }

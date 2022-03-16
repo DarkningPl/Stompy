@@ -28,7 +28,7 @@ public class LevelReader {
         private List<LRCandy> candies;
         private List<LRChocolate> chocolates;
         private List<LRCupcake> cupcakes;
-        private List<LRPizza> pizzas;
+        private List<LRCookie> cookies;
         public Vec2f getSize() {return size;}
         public Vec2f getPosition() {return position;}
         public Vec2f getCharacterPosition() {return characterPosition;}
@@ -40,7 +40,7 @@ public class LevelReader {
         public List<LRCandy> getCandies() {return candies;}
         public List<LRChocolate> getChocolates() {return chocolates;}
         public List<LRCupcake> getCupcakes() {return cupcakes;}
-        public List<LRPizza> getPizzas() {return pizzas;}
+        public List<LRCookie> getCookies() {return cookies;}
     }
 
     public static class LRBlock {
@@ -71,7 +71,7 @@ public class LevelReader {
         public Vec2f getPosition() {return position;}
     }
 
-    public static class LRPizza {
+    public static class LRCookie {
         private Vec2f position;
         public Vec2f getPosition() {return position;}
     }

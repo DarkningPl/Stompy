@@ -1,4 +1,4 @@
-package com.qb.stompy.living;
+package com.qb.stompy.living.candyland;
 
 import com.qb.stompy.objects.Enemy;
 import com.qb.stompy.objects.SolidBlock;
@@ -24,10 +24,10 @@ public class Candy extends Enemy implements AnimatedEntity {
 
 
     public Candy(Color color) {
-        setSize(Vec2.f(32, 16));
-        setOrigin(getSize().x / 2, getSize().y);
-        //;;
-        setFillColor(color);
+        super();
+        mainBody.setSize(Vec2.f(32, 16));
+        mainBody.setOrigin(mainBody.getSize().x / 2, mainBody.getSize().y);
+        mainBody.setFillColor(color);
         setMaxHp(1);
     }
 
@@ -137,30 +137,7 @@ public class Candy extends Enemy implements AnimatedEntity {
             }
         }
 
-        for (final Drawable object : window.getScene()) {
-            if (object instanceof final SolidBlock sBlock) {
-                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
-                //Vertical Collision
-                if (L < R2 && R > L2) {
-                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
-                        speedY = (B2 - T) / deltaTime.asSeconds();
-                    }
-                    if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
-                        speedY = (T2 - B) / deltaTime.asSeconds();
-                        onGround = true;
-                    }
-                }
-                //Horizontal Collision
-                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
-                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
-                        speedX = (R2 - L) / deltaTime.asSeconds();
-                    }
-                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
-                        speedX = (L2 - R) / deltaTime.asSeconds();
-                    }
-                }
-            }
-        }
+        preventBlockCollision(deltaTime);
 
         //No ankle biting
         if (target != null) {
@@ -168,8 +145,9 @@ public class Candy extends Enemy implements AnimatedEntity {
                     (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
                 if (T > target.gGB().top + target.gGB().height && speedY < 0) {
                     if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
-                        speedY = (target.gGB().top + target.gGB().height - T) / deltaTime.asSeconds();
+                        speedY = (target.gGB().top + target.gGB().height - T + 1) / deltaTime.asSeconds();
                         stomp();
+                        target.bounce();
                     }
                 }
             }
@@ -177,9 +155,9 @@ public class Candy extends Enemy implements AnimatedEntity {
 
         //frame animation
         if (speedY * deltaTime.asSeconds() > 0 || timeSinceJump >= 0.75 * timeBetweenJumps / jumpMultiplier)
-            animationTextures[1][boingedTexture].apply(this);
-        else if (speedY * deltaTime.asSeconds() < 0) animationTextures[2][boingedTexture].apply(this);
-        else animationTextures[0][boingedTexture].apply(this);
+            animationTextures[1][boingedTexture].apply(this.mainBody);
+        else if (speedY * deltaTime.asSeconds() < 0) animationTextures[2][boingedTexture].apply(this.mainBody);
+        else animationTextures[0][boingedTexture].apply(this.mainBody);
 
         moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
     }

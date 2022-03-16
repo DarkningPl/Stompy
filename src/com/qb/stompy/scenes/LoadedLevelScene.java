@@ -1,11 +1,10 @@
 package com.qb.stompy.scenes;
 
-import com.qb.stompy.dataReaders.LevelReader;
 import com.qb.stompy.dataReaders.World1Reader;
 import com.qb.stompy.dataReaders.World2Reader;
-import com.qb.stompy.dataReaders.WorldReader;
 import com.qb.stompy.living.*;
 import com.qb.stompy.living.Character;
+import com.qb.stompy.living.candyland.*;
 import com.qb.stompy.objects.GameObject;
 import com.qb.stompy.objects.MapBackground;
 import com.qb.stompy.objects.SolidBlock;
@@ -76,7 +75,7 @@ public class LoadedLevelScene extends Scene {
 
         //Background
         MapBackground background = new MapBackground(Vec2.f(level.getBackgroundTextureSize().x, level.getBackgroundTextureSize().y));
-        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + level.getTextureName()).apply(background);
+        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + level.getTextureName()).apply(background.mainBody);
         add(background);
 
         //Character
@@ -88,7 +87,7 @@ public class LoadedLevelScene extends Scene {
             World1Reader.W1Block blockData = level.getBlocks().get(i);
             SolidBlock block = new SolidBlock(Vec2.f(blockData.getSize().x, blockData.getSize().y));
             block.setPositionOnMap(blockData.getPosition().x, blockData.getPosition().y);
-            GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + blockData.getTextureName()).apply(block);
+            GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + blockData.getTextureName()).apply(block.mainBody);
             add(block);
         }
 
@@ -100,6 +99,14 @@ public class LoadedLevelScene extends Scene {
             add(candy);
         }
 
+        //Caramels
+        for (int i = 0; i < level.getCaramels().size(); i++) {
+            World1Reader.W1Caramel caramelData = level.getCaramels().get(i);
+            Caramel caramel = new Caramel();
+            caramel.setPositionOnMap(caramelData.getPosition().x, caramelData.getPosition().y);
+            add(caramel);
+        }
+
         //Chocolates
         for (int i = 0; i < level.getChocolates().size(); i++) {
             World1Reader.W1Chocolate chocolateData = level.getChocolates().get(i);
@@ -108,20 +115,28 @@ public class LoadedLevelScene extends Scene {
             add(chocolate);
         }
 
+        //Cookies
+        for (int i = 0; i < level.getCookies().size(); i++) {
+            World1Reader.W1Cookie cookieData = level.getCookies().get(i);
+            Cookie cookie = new Cookie();
+            cookie.setPositionOnMap(cookieData.getPosition().x, cookieData.getPosition().y);
+            add(cookie);
+        }
+
+        //Cotton candies
+        for (int i = 0; i < level.getCottonCandies().size(); i++) {
+            World1Reader.W1CottonCandy cottonCandyData = level.getCottonCandies().get(i);
+            CottonCandy cottonCandy = new CottonCandy(new Color(cottonCandyData.getColor().r, cottonCandyData.getColor().g, cottonCandyData.getColor().b));
+            cottonCandy.setPositionOnMap(cottonCandyData.getPosition().x, cottonCandyData.getPosition().y);
+            add(cottonCandy);
+        }
+
         //Cupcakes
         for (int i = 0; i < level.getCupcakes().size(); i++) {
             World1Reader.W1Cupcake cupcakeData = level.getCupcakes().get(i);
             Cupcake cupcake = new Cupcake();
             cupcake.setPositionOnMap(cupcakeData.getPosition().x, cupcakeData.getPosition().y);
             add(cupcake);
-        }
-
-        //Pizzas
-        for (int i = 0; i < level.getPizzas().size(); i++) {
-            World1Reader.W1Pizza pizzaData = level.getPizzas().get(i);
-            Pizza pizza = new Pizza();
-            pizza.setPositionOnMap(pizzaData.getPosition().x, pizzaData.getPosition().y);
-            add(pizza);
         }
     }
 
@@ -139,7 +154,6 @@ public class LoadedLevelScene extends Scene {
 
     @Override
     protected void init() {
-
         switch (worldNumber) {
             case 0 -> loadLevelFromWorld0();
             case 1 -> loadLevelFromWorld1();
@@ -188,11 +202,11 @@ public class LoadedLevelScene extends Scene {
                 if (obj instanceof final MapBackground back) {
                     float backgroundOffsetX, backgroundOffsetY;
                     if (getMapSize().x > window.getSize().x) {
-                        backgroundOffsetX = (back.getSize().x - window.getSize().x) / (getMapSize().x - window.getSize().x);
-                    } else backgroundOffsetX = (back.getSize().x - window.getSize().x) / getMapSize().x;
+                        backgroundOffsetX = (back.mainBody.getSize().x - window.getSize().x) / (getMapSize().x - window.getSize().x);
+                    } else backgroundOffsetX = (back.mainBody.getSize().x - window.getSize().x) / getMapSize().x;
                     if (getMapSize().y > window.getSize().y) {
-                        backgroundOffsetY = (back.getSize().y - window.getSize().y) / (getMapSize().y - window.getSize().y);
-                    } else backgroundOffsetY = (back.getSize().y - window.getSize().y) / getMapSize().y;
+                        backgroundOffsetY = (back.mainBody.getSize().y - window.getSize().y) / (getMapSize().y - window.getSize().y);
+                    } else backgroundOffsetY = (back.mainBody.getSize().y - window.getSize().y) / getMapSize().y;
                     back.setPosition(Vec2.multiply(Vec2.subtract(back.getPositionOnMap(), Vec2.f(backgroundOffsetX, backgroundOffsetY)), getMapOffset()));
                 }
             }

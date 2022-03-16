@@ -1,12 +1,12 @@
-package com.qb.stompy.living;
+package com.qb.stompy.living.candyland;
 
+import com.qb.stompy.living.Character;
 import com.qb.stompy.objects.Enemy;
 import com.qb.stompy.objects.SolidBlock;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.assets.TextureAtlas;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;
 import org.jetbrains.annotations.NotNull;
-import org.jsfml.graphics.Drawable;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 
@@ -15,7 +15,6 @@ public class Cupcake extends Enemy implements AnimatedEntity {
     private float timeToStopDashing = 0;
     private final float stopDashTime = 1, walkingSpeed = 80, dashingSpeed = 200;
     private boolean facingLeft = true, dashing = false, foundTarget = false, didAHop = false, shouldSlowDown = false;
-    private SolidBlock floor = null;
 
     private final TextureAtlas atlas = assets.get("texture_cupcake");
     private final Texture[][] textures = {{
@@ -27,9 +26,9 @@ public class Cupcake extends Enemy implements AnimatedEntity {
     }};
 
     public Cupcake() {
-        textures[0][0].apply(this);
-        setSize(new Vector2f(32, 28));
-        setOrigin(getSize().x / 2, getSize().y);
+        textures[0][0].apply(this.mainBody);
+        mainBody.setSize(new Vector2f(32, 28));
+        mainBody.setOrigin(mainBody.getSize().x / 2, mainBody.getSize().y);
         setMaxHp(1);
         stompable = false;
     }
@@ -37,7 +36,7 @@ public class Cupcake extends Enemy implements AnimatedEntity {
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
 
-        boolean foundGround = false;
+        foundGround = false;
         int direction = 1, animationFrames = 0, animationFrame;
         float animationSpeed = 2.5f;
 
@@ -126,32 +125,7 @@ public class Cupcake extends Enemy implements AnimatedEntity {
         }
 
         //Block collisions
-        for (final Drawable object : window.getScene()) {
-            if (object instanceof final SolidBlock sBlock) {
-                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
-                //Vertical Collision
-                if (L < R2 && R > L2) {
-                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
-                        speedY = (B2 - T) / deltaTime.asSeconds();
-                    }
-                    if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
-                        speedY = (T2 - B) / deltaTime.asSeconds();
-                        onGround = true;
-                        foundGround = true;
-                        floor = (SolidBlock) object;
-                    }
-                }
-                //Horizontal Collision
-                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
-                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
-                        speedX = (R2 - L) / deltaTime.asSeconds();
-                    }
-                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
-                        speedX = (L2 - R) / deltaTime.asSeconds();
-                    }
-                }
-            }
-        }
+        preventBlockCollision(deltaTime);
         if (!foundGround) floor = null;
 
         //Aggro
@@ -180,7 +154,7 @@ public class Cupcake extends Enemy implements AnimatedEntity {
         setScale(-direction * Math.abs(getScale().x), getScale().y);
         animationFrame = (int) (elapsedTime.asSeconds() * animationSpeed) % 2;
         //setTextureRect(new IntRect(16 * (int) (animationFrames + animationFrame), 0, 16, 14));
-        textures[animationFrames][animationFrame].apply(this);
+        textures[animationFrames][animationFrame].apply(this.mainBody);
 
         moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
     }

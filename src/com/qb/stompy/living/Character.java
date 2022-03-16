@@ -1,11 +1,9 @@
 package com.qb.stompy.living;
 
-import com.qb.stompy.scenes.LoadedWorldScene;
-import com.qb.stompy.dataReaders.LevelReader;
+import com.qb.stompy.living.candyland.Cookie;
 import com.qb.stompy.scenes.LoadedWorldScene;
 import com.qb.stompy.objects.Enemy;
 import com.qb.stompy.objects.SolidBlock;
-import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;
 import com.rubynaxela.kyanite.util.Vec2;
@@ -13,7 +11,6 @@ import com.rubynaxela.kyanite.window.event.KeyListener;
 import org.jetbrains.annotations.NotNull;
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.Drawable;
-import org.jsfml.graphics.FloatRect;
 import org.jsfml.graphics.IntRect;
 import org.jsfml.system.Time;
 import org.jsfml.window.event.KeyEvent;
@@ -29,10 +26,10 @@ public class Character extends LivingGameObject implements AnimatedEntity {
 
     public Character() {
         Texture texture = assets.get("texture_strawberry");
-        texture.apply(this);
-        setTextureRect(new IntRect(0, 0, 32, 32));
-        setSize(Vec2.f(32, 32));
-        setOrigin(getSize().x / 2, getSize().y);
+        texture.apply(this.mainBody);
+        mainBody.setTextureRect(new IntRect(0, 0, 32, 32));
+        mainBody.setSize(Vec2.f(32, 32));
+        mainBody.setOrigin(mainBody.getSize().x / 2, mainBody.getSize().y);
         setMaxHp(3);
         invincibilityTime = 1;
         idleActions = new boolean[]{false, false, false};
@@ -161,6 +158,10 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         }
     }
 
+    public void bounce() {
+        speedY = -boingStrength;
+    }
+
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
         frame = 0;
@@ -184,7 +185,7 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         if (recentlyDamaged) {
             invincibilityTime -= deltaTime.asSeconds();
             if (invincibilityTime < 0) invincibilityTime = 0;
-            setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
+            mainBody.setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
             if (invincibilityTime == 0) {
                 recentlyDamaged = false;
                 canBeDamaged = true;
@@ -213,7 +214,7 @@ public class Character extends LivingGameObject implements AnimatedEntity {
 
         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         animateIdle();
-        setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
+        mainBody.setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
 
         //Loop Variables
         float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
@@ -271,7 +272,6 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                         }
                     }*/
                     float L2 = ren.getSquareHitbox().getPosition().x, R2 = L2 + ren.getSquareHitbox().getSize().x, T2 = ren.getSquareHitbox().getPosition().y;
-                    FloatRect intersection = gGB().intersection(ren.getSquareHitbox().getGlobalBounds());
                     if (L < R2 && R > L2) {
                         if (ren.canBeStomped() && ren.canBeDamaged) {
                             if (B < T2 && speedY * deltaTime.asSeconds() >= T2 - B || B == T2) {
@@ -280,22 +280,21 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                             }
                         }
                     }
-                    if (intersection != null) {
+                    if (this.intersects(ren) && ren.isActive()) {
                         damage(1);
                     }
                 } else {
                     float L2 = en.gGB().left, R2 = L2 + en.gGB().width, T2 = en.gGB().top;
-                    FloatRect intersection = gGB().intersection(en.gGB());
                     if (L < R2 && R > L2) {
                         if (en.canBeStomped() && en.canBeDamaged) {
                             if (B < T2 && speedY * deltaTime.asSeconds() >= T2 - B || B == T2) {
-                                speedY = -boingStrength;
-                                if (en instanceof Pizza) boinged = true;
+                                bounce();
+                                if (en instanceof Cookie) boinged = true;
                                 en.stomp();
                             }
                         }
                     }
-                    if (intersection != null) {
+                    if (this.intersects(en) && en.isActive()) {
                         damage(1);
                     }
                 }
@@ -328,7 +327,7 @@ public class Character extends LivingGameObject implements AnimatedEntity {
         //Last updates
         if (speedY > 0) onGround = false;
         if (!onGround) animationFrame = 0;
-        if (!idleAction) setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
+        if (!idleAction) mainBody.setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
 
         if(/*character got to a certain point on map*/getPositionOnMap().x >= getLevelScene().getMapSize().x - 200) {
             //TODO update conditions to match new readers

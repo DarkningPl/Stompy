@@ -2,7 +2,7 @@ package com.qb.stompy;
 
 import com.qb.stompy.living.*;
 import com.qb.stompy.living.Character;
-import com.qb.stompy.buttons.GameButton;
+import com.qb.stompy.living.candyland.*;
 import com.qb.stompy.objects.GameObject;
 import com.qb.stompy.objects.MapObject;
 import com.qb.stompy.objects.SolidBlock;
@@ -62,20 +62,20 @@ public class StompyScene extends Scene {
         //
         MapObject background = new MapObject();
         Texture sky = getContext().getAssetsBundle().get("texture_sky");
-        sky.apply(background);
-        background.setSize(mapSize);
+        sky.apply(background.mainBody);
+        background.mainBody.setSize(mapSize);
         add(background);
 
         //
         SolidBlock floor = new SolidBlock(Vec2.f(mapSize.x, 20));
-        floor.setPositionOnMap(0, getContext().getWindow().getSize().y - floor.getSize().y);
-        floor.setFillColor(Colors.SANDY_BROWN);
+        floor.setPositionOnMap(0, getContext().getWindow().getSize().y - floor.mainBody.getSize().y);
+        floor.mainBody.setFillColor(Colors.SANDY_BROWN);
         add(floor);
 
         for (int i = 0; i < 10; i++) {
             SolidBlock block = new SolidBlock(Vec2.f(40, 40));
             block.setPositionOnMap(60 + 200 * i, 80 + 10 * i);
-            block.setFillColor(Colors.SANDY_BROWN);
+            block.mainBody.setFillColor(Colors.SANDY_BROWN);
             //add(block);
         }
 
@@ -102,9 +102,9 @@ public class StompyScene extends Scene {
         testCandy4.setPositionOnMap(310, 380);
         //add(testCandy4);
 
-        Pizza testPizza = new Pizza();
-        testPizza.setPositionOnMap(300, 540);
-        //add(testPizza);
+        Cookie testPizza = new Cookie();
+        testPizza.setPositionOnMap(0, 540);
+        add(testPizza);
 
         Cupcake testCupcake = new Cupcake();
         testCupcake.setPositionOnMap(700, 200);
@@ -120,7 +120,7 @@ public class StompyScene extends Scene {
 
         SolidBlock cPlatform = new SolidBlock(Vec2.f(800, 20));
         cPlatform.setPositionOnMap(500, 480);
-        cPlatform.setFillColor(Colors.SANDY_BROWN);
+        cPlatform.mainBody.setFillColor(Colors.SANDY_BROWN);
         add(cPlatform);
 
         //Blurr experiment

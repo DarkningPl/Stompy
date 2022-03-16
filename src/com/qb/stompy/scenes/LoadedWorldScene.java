@@ -101,9 +101,9 @@ public class LoadedWorldScene extends Scene {
                 makePath(point.getPositionOnMap(), end, pathNumber);
             } else {
                 MapPath path = new MapPath(getWorldNumber(), pathNumber);
-                textures[0].apply(path);
-                path.setSize(Vec2.f(end.x - start.x, textures[0].getSize().y));
-                path.setOrigin(0, path.getSize().y / 2);
+                textures[0].apply(path.mainBody);
+                path.mainBody.setSize(Vec2.f(end.x - start.x, textures[0].getSize().y));
+                path.setOrigin(0, path.mainBody.getSize().y / 2);
                 path.setPositionOnMap(start);
                 paths.add(path);
             }
@@ -124,25 +124,25 @@ public class LoadedWorldScene extends Scene {
                 makePath(point.getPositionOnMap(), end, pathNumber);
             } else {
                 MapPath path = new MapPath(getWorldNumber(), pathNumber);
-                textures[0].apply(path);
-                path.setSize(Vec2.f(start.x - end.x, textures[0].getSize().y));
-                path.setOrigin(0, path.getSize().y / 2);
+                textures[0].apply(path.mainBody);
+                path.mainBody.setSize(Vec2.f(start.x - end.x, textures[0].getSize().y));
+                path.setOrigin(0, path.mainBody.getSize().y / 2);
                 path.setPositionOnMap(end);
                 paths.add(path);
             }
         } else {
             if (start.y > end.y) {
                 MapPath path = new MapPath(getWorldNumber(), pathNumber);
-                textures[1].apply(path);
-                path.setSize(Vec2.f(textures[1].getSize().x, start.y - end.y));
-                path.setOrigin(path.getSize().x / 2, 0);
+                textures[1].apply(path.mainBody);
+                path.mainBody.setSize(Vec2.f(textures[1].getSize().x, start.y - end.y));
+                path.setOrigin(path.mainBody.getSize().x / 2, 0);
                 path.setPositionOnMap(end);
                 paths.add(path);
             } else if (start.y < end.y) {
                 MapPath path = new MapPath(getWorldNumber(), pathNumber);
-                textures[1].apply(path);
-                path.setSize(Vec2.f(textures[1].getSize().x, end.y - start.y));
-                path.setOrigin(path.getSize().x / 2, 0);
+                textures[1].apply(path.mainBody);
+                path.mainBody.setSize(Vec2.f(textures[1].getSize().x, end.y - start.y));
+                path.setOrigin(path.mainBody.getSize().x / 2, 0);
                 path.setPositionOnMap(start);
                 paths.add(path);
             } else {
@@ -166,7 +166,7 @@ public class LoadedWorldScene extends Scene {
 
         //Background
         MapBackground back = new MapBackground(Vec2.f(world.getBackgroundTextureSize().x, world.getBackgroundTextureSize().y));
-        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + world.getTextureName()).apply(back);
+        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + world.getTextureName()).apply(back.mainBody);
 
         //Character
         character.setPositionOnMap(world.getStartPoint().x, world.getStartPoint().y);
@@ -224,7 +224,7 @@ public class LoadedWorldScene extends Scene {
             case 2 -> loadWorld2();
             case 3 -> loadWorld3();
         }
-        for (MapObject path : paths) {
+        for (MapPath path : paths) {
             add(path);
         }
         for (MapPoint point : points) {
@@ -237,11 +237,11 @@ public class LoadedWorldScene extends Scene {
             add(number);
         }
         worldNumberText.setAlignment(Text.Alignment.CENTER);
-        worldNumberText.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 40);
+        worldNumberText.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 32);
         worldNameText.setAlignment(Text.Alignment.CENTER);
-        worldNameText.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 80);
-        add(worldNameText);
+        worldNameText.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 64);
         add(worldNumberText);
+        add(worldNameText);
         add(character);
     }
 
@@ -274,11 +274,11 @@ public class LoadedWorldScene extends Scene {
             if (obj instanceof final MapBackground back) {
                 float backgroundOffsetX, backgroundOffsetY;
                 if (getMapSize().x > window.getSize().x) {
-                    backgroundOffsetX = (back.getSize().x - window.getSize().x) / (getMapSize().x - window.getSize().x);
-                } else backgroundOffsetX = (back.getSize().x - window.getSize().x) / getMapSize().x;
+                    backgroundOffsetX = (back.mainBody.getSize().x - window.getSize().x) / (getMapSize().x - window.getSize().x);
+                } else backgroundOffsetX = (back.mainBody.getSize().x - window.getSize().x) / getMapSize().x;
                 if (getMapSize().y > window.getSize().y) {
-                    backgroundOffsetY = (back.getSize().y - window.getSize().y) / (getMapSize().y - window.getSize().y);
-                } else backgroundOffsetY = (back.getSize().y - window.getSize().y) / getMapSize().y;
+                    backgroundOffsetY = (back.mainBody.getSize().y - window.getSize().y) / (getMapSize().y - window.getSize().y);
+                } else backgroundOffsetY = (back.mainBody.getSize().y - window.getSize().y) / getMapSize().y;
                 back.setPosition(Vec2.multiply(Vec2.subtract(back.getPositionOnMap(), Vec2.f(backgroundOffsetX, backgroundOffsetY)),getMapOffset()));
             }
             if (obj instanceof final MapPath mapPath) {

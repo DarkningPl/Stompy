@@ -9,10 +9,11 @@ public class MapPath extends MapObject {
     private final int worldNumber, levelNumber;
     private boolean msg = false;
     public MapPath(int world, int level) {
+        super();
         worldNumber = world;
         levelNumber = level;
         if (!GameContext.getInstance().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().get(getWorldNumber()).isPathUnlocked(getLevelNumber())) {
-            setFillColor(new Color(255, 60, 60));
+            mainBody.setFillColor(new Color(255, 60, 60));
         }
     }
     public int getWorldNumber() {

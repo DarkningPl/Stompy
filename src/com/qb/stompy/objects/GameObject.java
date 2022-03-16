@@ -4,14 +4,16 @@ import com.qb.stompy.scenes.LoadedLevelScene;
 import com.qb.stompy.scenes.LoadedWorldScene;
 import com.rubynaxela.kyanite.game.GameContext;
 import com.rubynaxela.kyanite.game.assets.AssetsBundle;
+import com.rubynaxela.kyanite.game.entities.CompoundEntity;
 import com.rubynaxela.kyanite.util.Vec2;
 import com.rubynaxela.kyanite.window.Window;
 import org.jsfml.graphics.FloatRect;
 import org.jsfml.graphics.RectangleShape;
 import org.jsfml.system.Vector2f;
 
-public abstract class GameObject extends RectangleShape {
+public abstract class GameObject extends CompoundEntity {
 
+    public RectangleShape mainBody = new RectangleShape();
     private Vector2f positionOnMap, mapOffset;
     protected AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
     protected Window window = GameContext.getInstance().getWindow();
@@ -19,6 +21,7 @@ public abstract class GameObject extends RectangleShape {
     public GameObject() {
         positionOnMap = Vec2.f(0, 0);
         mapOffset = Vec2.f(0, 0);
+        add(mainBody);
     }
 
     public void setPositionOnMap(Vector2f pos) {

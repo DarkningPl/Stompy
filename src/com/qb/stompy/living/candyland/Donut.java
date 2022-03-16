@@ -1,6 +1,7 @@
-package com.qb.stompy.living;
+package com.qb.stompy.living.candyland;
 
 import com.qb.stompy.StompyScene;
+import com.qb.stompy.living.RoundEnemy;
 import com.qb.stompy.objects.SolidBlock;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.util.Vec2;
@@ -20,9 +21,9 @@ public class Donut extends RoundEnemy {
     public Donut(float diameter) {
         super(diameter);
         Texture texture = assets.get("texture_donut");
-        texture.apply(this);
-        setSize(Vec2.f(diameter, diameter));
-        setOrigin(getSize().x / 2, getSize().y / 2);
+        texture.apply(this.mainBody);
+        mainBody.setSize(Vec2.f(diameter, diameter));
+        mainBody.setOrigin(mainBody.getSize().x / 2, mainBody.getSize().y / 2);
         setMaxHp(1);
         frictionMultiplier = 0.01f;
 
@@ -123,30 +124,31 @@ public class Donut extends RoundEnemy {
         }
 
         //Block collisions
-        for (final Drawable object : window.getScene()) {
-            if (object instanceof final SolidBlock sBlock) {
-                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
-                //Vertical Collision
-                if (L < R2 && R > L2) {
-                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
-                        speedY = (B2 - T) / deltaTime.asSeconds();
-                    }
-                    if (B <= T2 /* + 1 //TODO // test this sh!t */ && speedY * deltaTime.asSeconds() >= T2 - B) {
-                        speedY = (T2 - B) / deltaTime.asSeconds();
-                        onGround = true;
-                    }
-                }
-                //Horizontal Collision
-                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
-                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
-                        speedX = (R2 - L) / deltaTime.asSeconds();
-                    }
-                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
-                        speedX = (L2 - R) / deltaTime.asSeconds();
-                    }
-                }
-            }
-        }
+//        for (final Drawable object : window.getScene()) {
+//            if (object instanceof final SolidBlock sBlock) {
+//                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
+//                //Vertical Collision
+//                if (L < R2 && R > L2) {
+//                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
+//                        speedY = (B2 - T) / deltaTime.asSeconds();
+//                    }
+//                    if (B <= T2 /* + 1 //TODO // test this sh!t */ && speedY * deltaTime.asSeconds() >= T2 - B) {
+//                        speedY = (T2 - B) / deltaTime.asSeconds();
+//                        onGround = true;
+//                    }
+//                }
+//                //Horizontal Collision
+//                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
+//                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
+//                        speedX = (R2 - L) / deltaTime.asSeconds();
+//                    }
+//                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
+//                        speedX = (L2 - R) / deltaTime.asSeconds();
+//                    }
+//                }
+//            }
+//        }
+        preventBlockCollision(deltaTime);
 
         //TOSS IT !!!
         if (!wasTossed && elapsedTime.asSeconds() > 4) {
@@ -156,7 +158,7 @@ public class Donut extends RoundEnemy {
         }
 
         //setOrigin(Vec2.divide(Vec2.f(getGlobalBounds().width,getGlobalBounds().height),2));
-        rotate(rSpeed);
+        mainBody.rotate(rSpeed);
 
         moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
 
