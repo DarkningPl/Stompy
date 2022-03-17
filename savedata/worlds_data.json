@@ -1,0 +1,12 @@
+{
+	"worlds": [
+		{
+			"bestScore": [0, 0, 0, 0, 0, 0, 0, 0],
+			"paths": [true, true, true, true, true, true, true, true, false]
+		},
+		{
+			"bestScore": 0,
+			"paths": [false]
+		}
+	]
+}
