@@ -1,10 +1,10 @@
 package com.qb.stompy.living;
 
-import com.qb.stompy.scenes.LoadedLevelScene;
-import com.qb.stompy.scenes.LoadedWorldScene;
 import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.objects.MapObject;
 import com.qb.stompy.objects.MapPoint;
+import com.qb.stompy.scenes.LoadedLevelScene;
+import com.qb.stompy.scenes.LoadedWorldScene;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;
@@ -19,10 +19,11 @@ import org.jsfml.window.event.KeyEvent;
 import java.util.ArrayList;
 
 public class MapCharacter extends MapObject implements AnimatedEntity {
-    private int textureFace = 0;
+
     private final int animationFrames = 8;
-    private float speedX, speedY, animationTime = 0;
     private final float movementSpeed = 120, animationLoopTime = 1.6f;
+    private int textureFace = 0;
+    private float speedX, speedY, animationTime = 0;
     private boolean leftPressed = false, rightPressed = false, upPressed = false, downPressed = false,
             sprinting = false, sprintPressed = false, sprintReleased = false, interaction = false;
 
@@ -104,7 +105,8 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
                     slowUF = false, slowUB = false,
                     slowDF = false, slowDB = false;
             float distLF = 0, distLB = 0, distRF = 0, distRB = 0, distUF = 0, distUB = 0, distDF = 0, distDB = 0;
-            ProgressReader.PRWorld world = assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().get(getWorldScene().getWorldNumber());
+            ProgressReader.PRWorld world =
+                    assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().get(getWorldScene().getWorldNumber());
             for (int i = 0; i < getWorldScene().getPaths().size(); i++) {
                 float L = getWorldScene().getPaths().get(i).gGB().left, R = L + getWorldScene().getPaths().get(i).gGB().width,
                         T = getWorldScene().getPaths().get(i).gGB().top, B = T + getWorldScene().getPaths().get(i).gGB().height;
@@ -149,7 +151,8 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
                 float L = getWorldScene().getPaths().get(i - 1).gGB().left, R = L + getWorldScene().getPaths().get(i - 1).gGB().width,
                         T = getWorldScene().getPaths().get(i - 1).gGB().top, B = T + getWorldScene().getPaths().get(i - 1).gGB().height;
                 boolean isOnPath = X >= L && X <= R && Y >= T && Y <= B;
-                boolean isUnlocked = world.isPathUnlocked(getWorldScene().getPaths().get(i - 1).getLevelNumber());//.paths.get(getWorldScene().getPaths().get(i).getLevelNumber()).unlocked;
+                boolean isUnlocked = world.isPathUnlocked(getWorldScene().getPaths().get(i - 1).getLevelNumber());//.paths
+                // .get(getWorldScene().getPaths().get(i).getLevelNumber()).unlocked;
                 if (hasBeenOnPathBackward && isOnPath && isUnlocked) {
                     movementX = speedX;
                     movementY = speedY;
@@ -224,12 +227,11 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
             }
         }
 
-
         //Updating data
         animationTime += deltaTime.asSeconds();
         if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
         if (speedY == 0) {
-            frame += (int)(animationFrames * animationTime / animationLoopTime);
+            frame += (int) (animationFrames * animationTime / animationLoopTime);
             if (speedX < 0) textureFace = 2;
             else if (speedX > 0) textureFace = 3;
             if (textureFace == 0 || textureFace == 1) frame = 0;

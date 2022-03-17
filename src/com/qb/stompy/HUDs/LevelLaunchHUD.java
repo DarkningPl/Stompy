@@ -17,7 +17,7 @@ import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RectangleShape;
 import org.jsfml.window.Keyboard;
 
-public class LevelLaunchHUD extends Scene {
+public class LevelLaunchHUD extends HUD {
 
     private final int worldNumber, levelNumber;
 
@@ -60,14 +60,5 @@ public class LevelLaunchHUD extends Scene {
         add(frame);
         add(name);
         add(launchButton);
-    }
-
-    @Override
-    protected void loop() {
-        if (Keyboard.isKeyPressed(Keyboard.Key.ESCAPE)) {
-            //TODO remove this HUD from window
-            getContext().getWindow().setHUD(HUD.empty());
-            System.out.println("Begone thot!");
-        }
     }
 }
