@@ -3,12 +3,14 @@ package com.qb.stompy.HUDs;
 import com.qb.stompy.buttons.LevelLaunchButton;
 import com.qb.stompy.dataReaders.LevelReader;
 import com.rubynaxela.kyanite.game.GameContext;
+import com.rubynaxela.kyanite.game.HUD;
 import com.rubynaxela.kyanite.game.Scene;
 import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.gui.Font;
 import com.rubynaxela.kyanite.game.gui.Text;
+import com.rubynaxela.kyanite.system.FirstThreadTool;
 import com.rubynaxela.kyanite.util.Vec2;
 import com.rubynaxela.kyanite.window.Window;
 import org.jsfml.graphics.Color;
@@ -23,6 +25,7 @@ public class LevelLaunchHUD extends Scene {
         worldNumber = world;
         levelNumber = level;
     }
+
     @Override
     protected void init() {
         AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
@@ -63,6 +66,7 @@ public class LevelLaunchHUD extends Scene {
     protected void loop() {
         if (Keyboard.isKeyPressed(Keyboard.Key.ESCAPE)) {
             //TODO remove this HUD from window
+            getContext().getWindow().setHUD(HUD.empty());
             System.out.println("Begone thot!");
         }
     }

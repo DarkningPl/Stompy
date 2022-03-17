@@ -36,7 +36,8 @@ public class StompyGame extends Game {
         assets.register("button_go", new TextureAtlas("assets/images/button_go.png"));
 
         assets.register("worlds", new DataAsset("assets/data/worlds_data.json"));
-        for (int i = 0; i < getContext().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().size(); i++) {
+        final int worldsCount = assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().size();
+        for (int i = 0; i < worldsCount; i++) {
             assets.register("world_" + i, new DataAsset("assets/data/world_" + i + "_data.json"));
         }
         assets.register("levels", new DataAsset("assets/data/levels_data.json"));
