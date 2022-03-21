@@ -1,14 +1,12 @@
 package com.qb.stompy.living.candyland;
 
-import com.qb.stompy.objects.Enemy;
-import com.qb.stompy.objects.SolidBlock;
+import com.qb.stompy.living.Enemy;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.assets.TextureAtlas;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;
 import com.rubynaxela.kyanite.util.Vec2;
 import org.jetbrains.annotations.NotNull;
 import org.jsfml.graphics.Color;
-import org.jsfml.graphics.Drawable;
 import org.jsfml.system.Time;
 
 @SuppressWarnings("FieldCanBeLocal")
@@ -145,7 +143,7 @@ public class Candy extends Enemy implements AnimatedEntity {
                     (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
                 if (T > target.gGB().top + target.gGB().height && speedY < 0) {
                     if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
-                        speedY = (target.gGB().top + target.gGB().height - T + 1) / deltaTime.asSeconds();
+                        speedY = 0;
                         stomp();
                         target.bounce();
                     }

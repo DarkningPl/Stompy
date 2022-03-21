@@ -1,5 +1,7 @@
 package com.qb.stompy.dataReaders;
 
+import java.util.List;
+
 public class WorldReader {
     protected String worldName, textureName;
     protected WRVec2f size, startPoint, endPoint, backgroundTextureSize;
@@ -14,6 +16,7 @@ public class WorldReader {
         protected WRVec2f size, position, characterPosition, backgroundTextureSize;
         protected String textureName;
         protected float bestScore, time;
+        protected List<WRBlock> blocks;
         public WRVec2f getSize() {return size;}
         public WRVec2f getPosition() {return position;}
         public WRVec2f getCharacterPosition() {return characterPosition;}
@@ -21,6 +24,15 @@ public class WorldReader {
         public String getTextureName() {return textureName;}
         public float getBestScore() {return bestScore;}
         public float getTime() {return time;}
+        public List<WRBlock> getBlocks() {return blocks;}
+    }
+
+    public static class WRBlock {
+        private String textureName;
+        private WorldReader.WRVec2f size, position;
+        public String getTextureName() {return textureName;}
+        public WRVec2f getSize() {return size;}
+        public WRVec2f getPosition() {return position;}
     }
 
     public static class RGB {

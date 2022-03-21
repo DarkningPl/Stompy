@@ -1,7 +1,5 @@
-package com.qb.stompy.objects;
+package com.qb.stompy.living;
 
-import com.qb.stompy.living.Character;
-import com.qb.stompy.living.LivingGameObject;
 import com.rubynaxela.kyanite.util.Vec2;
 import org.jsfml.system.Vector2f;
 

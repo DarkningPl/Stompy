@@ -1,11 +1,15 @@
 package com.qb.stompy.scenes;
 
+import com.qb.stompy.HUDs.LevelLaunchHUD;
+import com.qb.stompy.buttons.ExitPromptButton;
 import com.qb.stompy.dataReaders.LevelReader;
+import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.dataReaders.World1Reader;
 import com.qb.stompy.dataReaders.World2Reader;
 import com.qb.stompy.living.MapCharacter;
 import com.qb.stompy.objects.*;
 import com.rubynaxela.kyanite.game.GameContext;
+import com.rubynaxela.kyanite.game.HUD;
 import com.rubynaxela.kyanite.game.Scene;
 import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
@@ -15,16 +19,19 @@ import com.rubynaxela.kyanite.game.gui.Font;
 import com.rubynaxela.kyanite.game.gui.Text;
 import com.rubynaxela.kyanite.util.Vec2;
 import com.rubynaxela.kyanite.window.Window;
+import com.rubynaxela.kyanite.window.event.KeyListener;
 import org.jsfml.graphics.Drawable;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.Keyboard;
 import org.jsfml.window.Mouse;
+import org.jsfml.window.event.KeyEvent;
 
 import java.util.ArrayList;
 
 public class LoadedWorldScene extends Scene {
 
     private final int worldNumber;
+    private boolean isLaunchLevelHUD = false, isUpPressed = false, isDownPressed = false, wasUpReleased = false, wasDownReleased = false, cd = false;
     private final Vector2f mapSize;
     private Vector2f mapOffset = Vector2f.ZERO;
     private final Text worldNumberText = new Text(new Font(getContext().getAssetsBundle().get("font_mc"), 24));
@@ -34,7 +41,7 @@ public class LoadedWorldScene extends Scene {
     private final ArrayList<MapPoint> levelPoints = new ArrayList<>();
     private final ArrayList<MapPath> paths = new ArrayList<>();
     private final ArrayList<GameText> levelNumbers = new ArrayList<>();
-    private boolean cd = false;
+    private LevelLaunchHUD launchHUD = null;
 
     public LoadedWorldScene(int world) {
         worldNumber = world;
@@ -55,6 +62,32 @@ public class LoadedWorldScene extends Scene {
             }
         }
         mapSize = new Vector2f(size_x, size_y);
+
+        getContext().getWindow().addKeyListener(new KeyListener() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.key) {
+                    case DOWN -> {
+                        isDownPressed = true;
+                    }
+                    case UP -> {
+                        isUpPressed = true;
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                switch (e.key) {
+                    case DOWN -> {
+                        isDownPressed = false;
+                    }
+                    case UP -> {
+                        isUpPressed = false;
+                    }
+                }
+            }
+        });
     }
 
     public int getWorldNumber() {
@@ -158,7 +191,34 @@ public class LoadedWorldScene extends Scene {
         character.setPositionOnMap(getLevelPoints().get(level + 1).getPositionOnMap());
     }
 
-    public void loadWorld0() {
+    public void interactWith(int pointNumber) {
+        Window window = getContext().getWindow();
+        //Previous world
+        if (pointNumber == 0) {
+            if (getWorldNumber() != 0) {
+                window.setScene(new LoadedWorldScene(getWorldNumber() - 1));
+                window.<LoadedWorldScene>getScene().placeCharacterAtEnd();
+            }
+        }
+        //Next world
+        else if (pointNumber == points.size() - 1) {
+            if (pointNumber != getContext().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().size() - 1) {
+                window.setScene(new LoadedWorldScene(getWorldNumber() + 1));
+            } else {
+                //play a final cutscene or something
+            }
+        }
+        //Any level
+        else {
+            //TODO place an HUD
+            launchHUD = new LevelLaunchHUD(getWorldNumber(), pointNumber - 1);
+            window.setHUD(launchHUD);
+            isLaunchLevelHUD = true;
+            getPlayerCharacter().disableMovement();
+        }
+    }
+
+    private void loadWorld0() {
         World1Reader world = GameContext.getInstance().getAssetsBundle().<DataAsset>get("world_0").convertTo(World1Reader.class);
 
         worldNumberText.setText("World " + 1);
@@ -204,15 +264,57 @@ public class LoadedWorldScene extends Scene {
         add(back);
     }
 
-    public void loadWorld1() {
+    private void loadWorld1() {
+        World2Reader world = GameContext.getInstance().getAssetsBundle().<DataAsset>get("world_1").convertTo(World2Reader.class);
+
+        worldNumberText.setText("World " + 2);
+        worldNameText.setText(world.getWorldName());
+
+        //Background
+        MapBackground back = new MapBackground(Vec2.f(world.getBackgroundTextureSize().x, world.getBackgroundTextureSize().y));
+        GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + world.getTextureName()).apply(back.mainBody);
+
+        //Character
+        character.setPositionOnMap(world.getStartPoint().x, world.getStartPoint().y);
+
+        //Start point
+        MapPoint start = new MapPoint(2);
+        start.setPositionOnMap(world.getStartPoint().x, world.getStartPoint().y);
+        levelPoints.add(start);
+
+        //Levels
+        for (int i = 0; i < world.getLevels().size(); i++) {
+            World2Reader.W2Level lvl = world.getLevels().get(i);
+            MapPoint crossroad = new MapPoint(1);
+            MapPoint level = new MapPoint((float)Math.sqrt(2));
+            GameText levelNumber = new GameText((getWorldNumber() + 1) + " - " + (i + 1), new Font(getContext().getAssetsBundle().get("font_mc"), 24));
+            levelNumber.setAlignment(Text.Alignment.CENTER);
+            crossroad.setPositionOnMap(lvl.getPosition().x, lvl.getPosition().y);
+            level.setPositionOnMap(lvl.getPosition().x, lvl.getPosition().y - 60);
+            levelNumber.setPositionOnMap(lvl.getPosition().x, lvl.getPosition().y - 80);
+            points.add(crossroad);
+            levelPoints.add(level);
+            levelNumbers.add(levelNumber);
+            if (i == 0) makePath(start.getPositionOnMap(), crossroad.getPositionOnMap(), i);
+            else makePath(Vec2.f(world.getLevels().get(i - 1).getPosition().x, world.getLevels().get(i - 1).getPosition().y), crossroad.getPositionOnMap(), i);
+            makePath(crossroad.getPositionOnMap(), level.getPositionOnMap(), i);
+        }
+
+        //End point
+        MapPoint end = new MapPoint(2);
+        end.setPositionOnMap(world.getEndPoint().x, world.getEndPoint().y);
+        levelPoints.add(end);
+        if (world.getLevels().size() > 0) makePath(Vec2.f(world.getLevels().get(world.getLevels().size() - 1).getPosition().x, world.getLevels().get(world.getLevels().size() - 1).getPosition().y), end.getPositionOnMap(), world.getLevels().size());
+        else makePath(start.getPositionOnMap(), end.getPositionOnMap(), 0);
+
+        add(back);
+    }
+
+    private void loadWorld2() {
 
     }
 
-    public void loadWorld2() {
-
-    }
-
-     public void loadWorld3() {
+    private void loadWorld3() {
 
      }
 
@@ -281,13 +383,6 @@ public class LoadedWorldScene extends Scene {
                 } else backgroundOffsetY = (back.mainBody.getSize().y - window.getSize().y) / getMapSize().y;
                 back.setPosition(Vec2.multiply(Vec2.subtract(back.getPositionOnMap(), Vec2.f(backgroundOffsetX, backgroundOffsetY)),getMapOffset()));
             }
-            if (obj instanceof final MapPath mapPath) {
-                if (Mouse.isButtonPressed(Mouse.Button.LEFT)) {
-                    if (mapPath.getGlobalBounds().contains(Vec2.f(Mouse.getPosition(window).x, Mouse.getPosition(window).y))) {
-                        mapPath.printMsg();
-                    } else mapPath.enableMsg();
-                }
-            }
         }
 
         if (Keyboard.isKeyPressed(Keyboard.Key.P)) {
@@ -313,5 +408,22 @@ public class LoadedWorldScene extends Scene {
                 }
             }
         } else cd = false;
+
+        if (isLaunchLevelHUD) {
+            if (Keyboard.isKeyPressed(Keyboard.Key.ESCAPE)) {
+                getContext().getWindow().setHUD(HUD.empty());
+                launchHUD = null;
+                isLaunchLevelHUD = false;
+                getPlayerCharacter().enableMovement();
+            }
+            if (isUpPressed && wasUpReleased) {
+                launchHUD.selectOptionAbove();
+            }
+            if (isDownPressed && wasDownReleased) {
+                launchHUD.selectOptionBelow();
+            }
+        }
+        wasDownReleased = !isDownPressed;
+        wasUpReleased = !isUpPressed;
     }
 }

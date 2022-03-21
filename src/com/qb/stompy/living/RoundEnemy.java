@@ -1,6 +1,5 @@
 package com.qb.stompy.living;
 
-import com.qb.stompy.objects.Enemy;
 import org.jsfml.graphics.RectangleShape;
 import org.jsfml.system.Vector2f;
 

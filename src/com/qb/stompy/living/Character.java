@@ -2,7 +2,6 @@ package com.qb.stompy.living;
 
 import com.qb.stompy.living.candyland.Cookie;
 import com.qb.stompy.scenes.LoadedWorldScene;
-import com.qb.stompy.objects.Enemy;
 import com.qb.stompy.objects.SolidBlock;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;
@@ -38,8 +37,8 @@ public class Character extends LivingGameObject implements AnimatedEntity {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.key) {
-                    case A -> leftPressed = true;
-                    case D -> rightPressed = true;
+                    case LEFT -> leftPressed = true;
+                    case RIGHT -> rightPressed = true;
                     case LSHIFT -> sprintPressed = true;
                     case SPACE -> jumpPressed = true;
                 }
@@ -48,8 +47,8 @@ public class Character extends LivingGameObject implements AnimatedEntity {
             @Override
             public void keyReleased(KeyEvent e) {
                 switch (e.key) {
-                    case A -> leftPressed = false;
-                    case D -> rightPressed = false;
+                    case LEFT -> leftPressed = false;
+                    case RIGHT -> rightPressed = false;
                     case LSHIFT -> sprintPressed = false;
                     case SPACE -> jumpPressed = false;
                 }
@@ -287,7 +286,7 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                     float L2 = en.gGB().left, R2 = L2 + en.gGB().width, T2 = en.gGB().top;
                     if (L < R2 && R > L2) {
                         if (en.canBeStomped() && en.canBeDamaged) {
-                            if (B < T2 && speedY * deltaTime.asSeconds() >= T2 - B || B == T2) {
+                            if (B == T2 || (B < T2 && ((speedY - en.getSpeed().y) * deltaTime.asSeconds() >= T2 - B || speedY * deltaTime.asSeconds() >= T2 - B))) {
                                 bounce();
                                 if (en instanceof Cookie) boinged = true;
                                 en.stomp();

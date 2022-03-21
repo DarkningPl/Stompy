@@ -7,7 +7,6 @@ import org.jsfml.graphics.Color;
 
 public class MapPath extends MapObject {
     private final int worldNumber, levelNumber;
-    private boolean msg = false;
     public MapPath(int world, int level) {
         super();
         worldNumber = world;
@@ -21,14 +20,5 @@ public class MapPath extends MapObject {
     }
     public int getLevelNumber() {
         return levelNumber;
-    }
-    public void printMsg(){
-        if (!msg) {
-            System.out.println("World number: " + getWorldNumber() + ", level number: " + getLevelNumber() + ", unlocked: " + GameContext.getInstance().getAssetsBundle().<DataAsset>get("maps").convertTo(ProgressReader.class).getWorlds().get(getWorldNumber()).isPathUnlocked(getLevelNumber()));
-            msg=true;
-        }
-    }
-    public void enableMsg(){
-        msg=false;
     }
 }

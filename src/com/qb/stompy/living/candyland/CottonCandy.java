@@ -1,8 +1,7 @@
 package com.qb.stompy.living.candyland;
 
 import com.qb.stompy.living.Character;
-import com.qb.stompy.objects.Enemy;
-import com.rubynaxela.kyanite.game.GameContext;
+import com.qb.stompy.living.Enemy;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.util.Colors;
 import com.rubynaxela.kyanite.util.Vec2;
@@ -14,7 +13,7 @@ import org.jsfml.window.Keyboard;
 
 public class CottonCandy extends Enemy {
 
-    private final float movementSpeed = 150, changeDirectionTime = 2;
+    private final float movementSpeed = 150, changeDirectionTime = 1.2f;
     private float floatingAroundTime = 0;
 
     public CottonCandy () {
@@ -107,6 +106,7 @@ public class CottonCandy extends Enemy {
                 }
             }
         }
+        if (speedY < 0) onGround = false;
 
         setScale(-direction * Math.abs(getScale().x), getScale().y);
         mainBody.setTextureRect(new IntRect(0, animationFrame * 16, 32, 16));

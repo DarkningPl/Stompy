@@ -16,49 +16,49 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 800, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 800, "y": 32},
+					"position": {"x": 0, "y": 568}
 				},
 				{
-					"textureName": "dirt",
-					"size": {"x": 900, "y": 16},
-					"position": {"x": 900, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 900, "y": 32},
+					"position": {"x": 900, "y": 568}
 				},
 				{
-					"textureName": "dirt",
-					"size": {"x": 1400, "y": 16},
-					"position": {"x": 2000, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 1400, "y": 32},
+					"position": {"x": 2000, "y": 568}
 				},
 				{
-					"textureName": "dirt",
-					"size": {"x": 400, "y": 16},
-					"position": {"x": 3600, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 400, "y": 32},
+					"position": {"x": 3600, "y": 568}
 				},
 				{
-					"textureName": "brick",
-					"size": {"x": 200, "y": 16},
-					"position": {"x": 400, "y": 480}
+					"textureName": "stone_brick",
+					"size": {"x": 192, "y": 32},
+					"position": {"x": 400, "y": 448}
 				},
 				{
-					"textureName": "brick",
-					"size": {"x": 200, "y": 16},
-					"position": {"x": 1300, "y": 480}
+					"textureName": "stone_brick",
+					"size": {"x": 192, "y": 32},
+					"position": {"x": 1300, "y": 448}
 				},
 				{
-					"textureName": "brick",
-					"size": {"x": 200, "y": 16},
-					"position": {"x": 1400, "y": 380}
+					"textureName": "stone_brick",
+					"size": {"x": 192, "y": 32},
+					"position": {"x": 1400, "y": 348}
 				},
 				{
-					"textureName": "brick",
-					"size": {"x": 100, "y": 16},
-					"position": {"x": 2200, "y": 480}
+					"textureName": "stone_brick",
+					"size": {"x": 96, "y": 32},
+					"position": {"x": 2200, "y": 448}
 				},
 				{
-					"textureName": "brick",
-					"size": {"x": 100, "y": 16},
-					"position": {"x": 2700, "y": 480}
+					"textureName": "stone_brick",
+					"size": {"x": 96, "y": 32},
+					"position": {"x": 2700, "y": 448}
 				}
 			],
 			"candies": [
@@ -68,7 +68,7 @@
 				},
 				{
 					"color": {"r": 255,"g": 255, "b": 0},
-					"position": {"x": 1500, "y": 360}
+					"position": {"x": 1500, "y": 340}
 				},
 				{
 					"color": {"r": 0,"g": 0, "b": 255},
@@ -76,8 +76,7 @@
 				}
 			],
 			"caramels": [],
-			"chocolates": [
-			],
+			"chocolates": [],
 			"cookies": [],
 			"cottonCandies": [],
 			"cupcakes": [
@@ -96,9 +95,9 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 4000, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 4000, "y": 32},
+					"position": {"x": 0, "y": 568}
 				}
 			],
 			"candies": [],
@@ -122,9 +121,9 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 4000, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 4000, "y": 32},
+					"position": {"x": 0, "y": 568}
 				}
 			],
 			"candies": [],
@@ -132,7 +131,7 @@
 			"chocolates": [
 				{
 					"hp": 4,
-					"position": {"x": 600, "y": 440}
+					"position": {"x": 600, "y": 560}
 				}
 			],
 			"cookies": [],
@@ -154,9 +153,9 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 4000, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 4000, "y": 32},
+					"position": {"x": 0, "y": 568}
 				}
 			],
 			"candies": [],
@@ -176,9 +175,9 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 4000, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 4000, "y": 32},
+					"position": {"x": 0, "y": 568}
 				}
 			],
 			"candies": [],
@@ -198,9 +197,9 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 4000, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 4000, "y": 32},
+					"position": {"x": 0, "y": 568}
 				}
 			],
 			"candies": [],
@@ -220,9 +219,9 @@
 			"time": 300,
 			"blocks" : [
 				{
-					"textureName": "dirt",
-					"size": {"x": 4000, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 4000, "y": 32},
+					"position": {"x": 0, "y": 568}
 				}
 			],
 			"candies": [],
@@ -242,14 +241,14 @@
 			"time": 300,
 			"blocks": [
 				{
-					"textureName": "dirt",
-					"size": {"x": 800, "y": 16},
-					"position": {"x": 0, "y": 584}
+					"textureName": "grassy_dirt",
+					"size": {"x": 800, "y": 32},
+					"position": {"x": 0, "y": 568}
 				},
 				{
-					"textureName": "brick",
-					"size": {"x": 800, "y": 16},
-					"position": {"x": 1000, "y": 584}
+					"textureName": "stone_brick",
+					"size": {"x": 800, "y": 32},
+					"position": {"x": 1000, "y": 568}
 				}
 			],
 			"candies": [],
@@ -262,7 +261,7 @@
 			],
 			"cookies": [
 				{
-					"position": {"x": 760, "y": 360}
+					"position": {"x": 760, "y": 560}
 				}
 			],
 			"cottonCandies": [],

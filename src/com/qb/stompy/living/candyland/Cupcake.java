@@ -1,8 +1,7 @@
 package com.qb.stompy.living.candyland;
 
 import com.qb.stompy.living.Character;
-import com.qb.stompy.objects.Enemy;
-import com.qb.stompy.objects.SolidBlock;
+import com.qb.stompy.living.Enemy;
 import com.rubynaxela.kyanite.game.assets.Texture;
 import com.rubynaxela.kyanite.game.assets.TextureAtlas;
 import com.rubynaxela.kyanite.game.entities.AnimatedEntity;

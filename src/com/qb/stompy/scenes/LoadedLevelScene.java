@@ -2,6 +2,7 @@ package com.qb.stompy.scenes;
 
 import com.qb.stompy.dataReaders.World1Reader;
 import com.qb.stompy.dataReaders.World2Reader;
+import com.qb.stompy.dataReaders.WorldReader;
 import com.qb.stompy.living.*;
 import com.qb.stompy.living.Character;
 import com.qb.stompy.living.candyland.*;
@@ -13,6 +14,9 @@ import com.rubynaxela.kyanite.game.Scene;
 import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
 import com.rubynaxela.kyanite.game.assets.Texture;
+import com.rubynaxela.kyanite.game.gui.Font;
+import com.rubynaxela.kyanite.game.gui.Text;
+import com.rubynaxela.kyanite.util.Colors;
 import com.rubynaxela.kyanite.util.Vec2;
 import com.rubynaxela.kyanite.window.Window;
 import org.jsfml.graphics.Color;
@@ -21,12 +25,17 @@ import org.jsfml.system.Vector2f;
 
 public class LoadedLevelScene extends Scene {
     private final int levelNumber, worldNumber;
+    private float timePassed = 0;
+    private final float levelTime;
     private boolean paused = false;
     private final Vector2f mapSize;
     private Vector2f mapOffset = Vec2.f(0, 0);
+    private final Text timeVal = new Text();
+    private final Font mc_font = new Font(getContext().getAssetsBundle().get("font_mc"), 24);
     private final Character character = new Character();
 
     public LoadedLevelScene(int world, int level) {
+        levelTime = 400;
         levelNumber = level;
         worldNumber = world;
         AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
@@ -84,10 +93,13 @@ public class LoadedLevelScene extends Scene {
 
         //Solid Blocks
         for (int i = 0; i < level.getBlocks().size(); i++) {
-            World1Reader.W1Block blockData = level.getBlocks().get(i);
+            WorldReader.WRBlock blockData = level.getBlocks().get(i);
             SolidBlock block = new SolidBlock(Vec2.f(blockData.getSize().x, blockData.getSize().y));
             block.setPositionOnMap(blockData.getPosition().x, blockData.getPosition().y);
-            GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + blockData.getTextureName()).apply(block.mainBody);
+//            Texture texture = GameContext.getInstance().getAssetsBundle().<Texture>get("texture_" + blockData.getTextureName());
+//            texture.setTileable(true);
+//            texture.apply(block.mainBody);
+            block.setTextureTile(blockData.getTextureName());
             add(block);
         }
 
@@ -162,6 +174,30 @@ public class LoadedLevelScene extends Scene {
         }
 
         bringToTop(character);
+
+        //Level data and such
+        Text levelTextField = new Text("Level", mc_font);
+        levelTextField.setCharacterSize(32);
+        levelTextField.setColor(Colors.SADDLE_BROWN);
+        levelTextField.setAlignment(Text.Alignment.TOP_CENTER);
+        levelTextField.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 32);
+
+        Text levelNumber = new Text((getWorldNumber() + 1) + " - " + (getLevelNumber() + 1), mc_font);
+        levelNumber.setColor(Colors.SADDLE_BROWN);
+        levelNumber.setAlignment(Text.Alignment.TOP_CENTER);
+        levelNumber.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 80);
+
+        Text time = new Text("TIME:", mc_font);
+        time.setAlignment(Text.Alignment.CENTER_RIGHT);
+        time.setColor(Colors.SADDLE_BROWN);
+        time.setPosition(788, 40);
+
+        timeVal.setFont(mc_font);
+        timeVal.setAlignment(Text.Alignment.CENTER_RIGHT);
+        timeVal.setColor(Colors.SADDLE_BROWN);
+        timeVal.setPosition(788, 70);
+
+        add(levelTextField, levelNumber, time, timeVal);
     }
 
     @Override
@@ -210,6 +246,9 @@ public class LoadedLevelScene extends Scene {
                     back.setPosition(Vec2.multiply(Vec2.subtract(back.getPositionOnMap(), Vec2.f(backgroundOffsetX, backgroundOffsetY)), getMapOffset()));
                 }
             }
+
+            timePassed += getDeltaTime().asSeconds();
+            timeVal.setText("" + (int)(levelTime - (int)timePassed));
         }
     }
 }
