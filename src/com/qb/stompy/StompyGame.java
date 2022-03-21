@@ -4,11 +4,16 @@ import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.scenes.LoadedWorldScene;
 import com.rubynaxela.kyanite.game.Game;
 import com.rubynaxela.kyanite.game.assets.*;
+import com.rubynaxela.kyanite.util.data.DataFile;
+import com.rubynaxela.kyanite.util.data.JSONDataFile;
 import com.rubynaxela.kyanite.window.Window;
 
 import java.util.List;
 
 public class StompyGame extends Game {
+
+    public static ProgressReader progress = new JSONDataFile("savedata/worlds_data.json").convertTo(ProgressReader.class);
+
     public StompyGame(){
         final AssetsBundle assets = getContext().getAssetsBundle();
         final Window window = getContext().setupWindow(800, 600, "Stompy Game");

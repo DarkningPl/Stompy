@@ -1,0 +1,13 @@
+{
+	"lastCompletedLevel": {"worldNumber": 0, "levelNumber": 0},
+	"worlds": [
+		{
+			"bestScores": [0, 0, 0, 0, 0, 0, 0, 0],
+			"paths": [true, true, true, true, true, true, true, true, false]
+		},
+		{
+			"bestScores": [],
+			"paths": [false]
+		}
+	]
+}
