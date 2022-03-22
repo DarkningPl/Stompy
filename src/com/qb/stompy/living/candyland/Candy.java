@@ -31,133 +31,135 @@ public class Candy extends Enemy implements AnimatedEntity {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        //Kill
-        if (currentHp <= 0) {
-            kill();
-        }
-
-        //Gravity
-        speedY += 1000 * deltaTime.asSeconds();
-
-        //Loop Variables
-        float jumpMultiplier = 1, L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
-
-        //Target player
-        if (getLevelScene() != null) {
-            boolean shouldClearTarget = true;
-            if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead()) {
-                if (Math.abs(getLevelScene().getPlayerCharacter().getPositionOnMap().x - getPositionOnMap().x) < 600) {
-                    if (Math.abs(getLevelScene().getPlayerCharacter().getPositionOnMap().x - getPositionOnMap().x) < 300) {
-                        target = getLevelScene().getPlayerCharacter();
-                        foundTarget = true;
-                    }
-                }
-                shouldClearTarget = false;
+        if (!getLevelScene().isPaused()) {
+            //Kill
+            if (currentHp <= 0) {
+                kill();
             }
-            if (shouldClearTarget) {
-                target = null;
-                foundTarget = false;
-                didAHop = false;
-            }
-        }
 
-        if (target != null)
-            jumpMultiplier = chaseMultiplier;
+            //Gravity
+            speedY += 1000 * deltaTime.asSeconds();
 
-        //Jumping
-        if (getLevelScene() != null) {
-            if (Math.abs(getPositionOnMap().x - getLevelScene().getMapOffset().x) < window.getSize().x) {
-                if (onGround) {
-                    if (foundTarget && !didAHop) {
-                        didAHop = true;
-                        speedY = -aggroJumpStrength;
-                        onGround = false;
-                        if (target != null) {
-                            if (target.getPositionOnMap().x - getPositionOnMap().x < 0) {
-                                facingLeft = true;
-                                setScale(Math.abs(getScale().x), getScale().y);
-                            } else {
-                                facingLeft = false;
-                                setScale(-Math.abs(getScale().x), getScale().y);
-                            }
+            //Loop Variables
+            float jumpMultiplier = 1, L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
+
+            //Target player
+            if (getLevelScene() != null) {
+                boolean shouldClearTarget = true;
+                if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead()) {
+                    if (Math.abs(getLevelScene().getPlayerCharacter().getPositionOnMap().x - getPositionOnMap().x) < 600) {
+                        if (Math.abs(getLevelScene().getPlayerCharacter().getPositionOnMap().x - getPositionOnMap().x) < 300) {
+                            target = getLevelScene().getPlayerCharacter();
+                            foundTarget = true;
                         }
                     }
-                    if (hasJumped) {
-                        hasJumped = false;
-                        speedX = 0;
-                        //turnaround
-                        if (target != null) {
-                            if (target.getPositionOnMap().x - getPositionOnMap().x < 0) {
-                                facingLeft = true;
-                                setScale(Math.abs(getScale().x), getScale().y);
+                    shouldClearTarget = false;
+                }
+                if (shouldClearTarget) {
+                    target = null;
+                    foundTarget = false;
+                    didAHop = false;
+                }
+            }
+
+            if (target != null)
+                jumpMultiplier = chaseMultiplier;
+
+            //Jumping
+            if (getLevelScene() != null) {
+                if (Math.abs(getPositionOnMap().x - getLevelScene().getMapOffset().x) < window.getSize().x) {
+                    if (onGround) {
+                        if (foundTarget && !didAHop) {
+                            didAHop = true;
+                            speedY = -aggroJumpStrength;
+                            onGround = false;
+                            if (target != null) {
+                                if (target.getPositionOnMap().x - getPositionOnMap().x < 0) {
+                                    facingLeft = true;
+                                    setScale(Math.abs(getScale().x), getScale().y);
+                                } else {
+                                    facingLeft = false;
+                                    setScale(-Math.abs(getScale().x), getScale().y);
+                                }
+                            }
+                        }
+                        if (hasJumped) {
+                            hasJumped = false;
+                            speedX = 0;
+                            //turnaround
+                            if (target != null) {
+                                if (target.getPositionOnMap().x - getPositionOnMap().x < 0) {
+                                    facingLeft = true;
+                                    setScale(Math.abs(getScale().x), getScale().y);
+                                } else {
+                                    facingLeft = false;
+                                    setScale(-Math.abs(getScale().x), getScale().y);
+                                }
                             } else {
-                                facingLeft = false;
-                                setScale(-Math.abs(getScale().x), getScale().y);
+                                if ((int) (Math.random() * 2) == 0) {
+                                    facingLeft = !facingLeft;
+                                    setScale(-getScale().x, getScale().y);
+                                }
                             }
                         } else {
-                            if ((int) (Math.random() * 2) == 0) {
-                                facingLeft = !facingLeft;
-                                setScale(-getScale().x, getScale().y);
-                            }
+                            timeSinceJump += deltaTime.asSeconds();
                         }
-                    } else {
-                        timeSinceJump += deltaTime.asSeconds();
                     }
-                }
-                if (timeSinceJump >= timeBetweenJumps / jumpMultiplier) {
-                    if (facingLeft) {
-                        speedX = -horizontalSpeed * jumpMultiplier;
-                    } else {
-                        speedX = horizontalSpeed * jumpMultiplier;
-                    }
-                    speedY = -jumpStrength * (float) Math.sqrt(jumpMultiplier);
-                    onGround = false;
-                    hasJumped = true;
-                    timeSinceJump = (float)(Math.random() * 0.5);
-                }
-            }
-        }
-
-        //Out of map prevention
-        if (getLevelScene() != null) {
-            if (-(L + speedX * deltaTime.asSeconds()) >= getLevelScene().getMapOffset().x) {
-                speedX = -L / deltaTime.asSeconds();
-            }
-            if (R + speedX * deltaTime.asSeconds() >= getLevelScene().getMapSize().x) {
-                speedX = (getLevelScene().getMapSize().x - R) / deltaTime.asSeconds();
-            }
-        } else {
-            if (-(L + speedX * deltaTime.asSeconds()) >= 0) {
-                speedX = -L / deltaTime.asSeconds();
-            }
-            if (R + speedX * deltaTime.asSeconds() >= window.getSize().x) {
-                speedX = (window.getSize().x - R) / deltaTime.asSeconds();
-            }
-        }
-
-        preventBlockCollision(deltaTime);
-
-        //No ankle biting
-        if (target != null) {
-            if ((L < target.gGB().left + target.gGB().width && R > target.gGB().left) ||
-                    (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
-                if (T > target.gGB().top + target.gGB().height && speedY < 0) {
-                    if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
-                        speedY = 0;
-                        stomp();
-                        target.bounce();
+                    if (timeSinceJump >= timeBetweenJumps / jumpMultiplier) {
+                        if (facingLeft) {
+                            speedX = -horizontalSpeed * jumpMultiplier;
+                        } else {
+                            speedX = horizontalSpeed * jumpMultiplier;
+                        }
+                        speedY = -jumpStrength * (float) Math.sqrt(jumpMultiplier);
+                        onGround = false;
+                        hasJumped = true;
+                        timeSinceJump = (float) (Math.random() * 0.5);
                     }
                 }
             }
+
+            //Out of map prevention
+            if (getLevelScene() != null) {
+                if (-(L + speedX * deltaTime.asSeconds()) >= getLevelScene().getMapOffset().x) {
+                    speedX = -L / deltaTime.asSeconds();
+                }
+                if (R + speedX * deltaTime.asSeconds() >= getLevelScene().getMapSize().x) {
+                    speedX = (getLevelScene().getMapSize().x - R) / deltaTime.asSeconds();
+                }
+            } else {
+                if (-(L + speedX * deltaTime.asSeconds()) >= 0) {
+                    speedX = -L / deltaTime.asSeconds();
+                }
+                if (R + speedX * deltaTime.asSeconds() >= window.getSize().x) {
+                    speedX = (window.getSize().x - R) / deltaTime.asSeconds();
+                }
+            }
+
+            preventBlockCollision(deltaTime);
+
+            //No ankle biting
+            if (target != null) {
+                if ((L < target.gGB().left + target.gGB().width && R > target.gGB().left) ||
+                        (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
+                    if (T > target.gGB().top + target.gGB().height && speedY < 0) {
+                        if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
+                            speedY = 0;
+                            stomp();
+                            target.bounce();
+                        }
+                    }
+                }
+            }
+
+            //frame animation
+            if (speedY * deltaTime.asSeconds() > 0 || timeSinceJump >= 0.75 * timeBetweenJumps / jumpMultiplier)
+                animationTextures[1][boingedTexture].apply(this.mainBody);
+            else if (speedY * deltaTime.asSeconds() < 0) animationTextures[2][boingedTexture].apply(this.mainBody);
+            else animationTextures[0][boingedTexture].apply(this.mainBody);
+
+            moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
         }
-
-        //frame animation
-        if (speedY * deltaTime.asSeconds() > 0 || timeSinceJump >= 0.75 * timeBetweenJumps / jumpMultiplier)
-            animationTextures[1][boingedTexture].apply(this.mainBody);
-        else if (speedY * deltaTime.asSeconds() < 0) animationTextures[2][boingedTexture].apply(this.mainBody);
-        else animationTextures[0][boingedTexture].apply(this.mainBody);
-
-        moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
     }
 
     @Override

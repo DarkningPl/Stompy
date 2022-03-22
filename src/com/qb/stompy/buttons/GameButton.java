@@ -9,13 +9,13 @@ import com.rubynaxela.kyanite.game.gui.Font;
 import com.rubynaxela.kyanite.game.gui.Text;
 import com.rubynaxela.kyanite.util.Colors;
 import com.rubynaxela.kyanite.util.Vec2;
+import com.rubynaxela.kyanite.window.Window;
 import com.rubynaxela.kyanite.window.event.MouseButtonListener;
 import org.jetbrains.annotations.NotNull;
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RectangleShape;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
-import org.jsfml.system.Vector2i;
 import org.jsfml.window.Keyboard;
 import org.jsfml.window.Mouse;
 import org.jsfml.window.event.MouseButtonEvent;
@@ -24,12 +24,15 @@ public abstract class GameButton extends CompoundEntity implements AnimatedEntit
 
     private final RectangleShape interior;
     private boolean isLPressed = false, wasLPressed = false, cancelPress = false, selected = false, shouldUnselect = false;
+    protected Window window = GameContext.getInstance().getWindow();
+    private final Vector2f size;
 
     public GameButton(Vector2f buttonSize, String message) {
         this(buttonSize, 8, message, Colors.BLACK);
     }
 
     public GameButton(Vector2f buttonSize, int fontSize, String message, Color textColor) {
+        size = buttonSize;
         Color black = Colors.BLACK;
 
         Text msg = new Text(message, new Font(GameContext.getInstance().getAssetsBundle().get("font_mc"), fontSize));
@@ -87,6 +90,7 @@ public abstract class GameButton extends CompoundEntity implements AnimatedEntit
     public boolean isSelected() {
         return selected;
     }
+    public Vector2f getSize() { return size; }
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
@@ -94,6 +98,7 @@ public abstract class GameButton extends CompoundEntity implements AnimatedEntit
         Color hoverColor = new Color(151, 128, 50);
         if (getGlobalBounds().contains(Vec2.f(Mouse.getPosition(GameContext.getInstance().getWindow())))) {
             interior.setFillColor(hoverColor);
+            if (selected && Keyboard.isKeyPressed(Keyboard.Key.SPACE)) clickAction();
             shouldUnselect = true;
         } else {
             interior.setFillColor(idleColor);
@@ -104,11 +109,8 @@ public abstract class GameButton extends CompoundEntity implements AnimatedEntit
             }
             if (selected) {
                 interior.setFillColor(hoverColor);
-                if (Keyboard.isKeyPressed(Keyboard.Key.SPACE)) {
-                    clickAction();
-                }
+                if (Keyboard.isKeyPressed(Keyboard.Key.SPACE)) clickAction();
             } else interior.setFillColor(idleColor);
-
         }
 
         //Do action

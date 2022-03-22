@@ -15,15 +15,15 @@ public class WorldReader {
     public static class WRLevel {
         protected WRVec2f size, position, characterPosition, backgroundTextureSize;
         protected String textureName;
-        protected float bestScore, time;
+        protected int bestScore, time;
         protected List<WRBlock> blocks;
         public WRVec2f getSize() {return size;}
         public WRVec2f getPosition() {return position;}
         public WRVec2f getCharacterPosition() {return characterPosition;}
         public WRVec2f getBackgroundTextureSize() {return backgroundTextureSize;}
         public String getTextureName() {return textureName;}
-        public float getBestScore() {return bestScore;}
-        public float getTime() {return time;}
+        public int getBestScore() {return bestScore;}
+        public int getTime() {return time;}
         public List<WRBlock> getBlocks() {return blocks;}
     }
 

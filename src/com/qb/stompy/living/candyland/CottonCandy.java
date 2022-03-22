@@ -33,84 +33,86 @@ public class CottonCandy extends Enemy {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        int animationFrame = 0, direction = 1;
+        if (!getLevelScene().isPaused()) {
+            int animationFrame = 0, direction = 1;
 
-        //Kill
-        if (currentHp <= 0) {
-            kill();
-            animationFrame = 1;
-        }
+            //Kill
+            if (currentHp <= 0) {
+                kill();
+                animationFrame = 1;
+            }
 
-        //Gravity
-        if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
+            //Gravity
+            if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
 
-        //Loop Variables
-        float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
+            //Loop Variables
+            float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
 
-        //Target player
-        if (getLevelScene() != null) {
-            boolean shouldClearTarget = true;
-            if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead()) {
-                Character character = getLevelScene().getPlayerCharacter();
-                if (Math.abs(character.getPositionOnMap().x - getPositionOnMap().x) < 600) {
-                    if (Math.abs(character.getPositionOnMap().x - getPositionOnMap().x) < 300) {
-                        target = character;
+            //Target player
+            if (getLevelScene() != null) {
+                boolean shouldClearTarget = true;
+                if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead()) {
+                    Character character = getLevelScene().getPlayerCharacter();
+                    if (Math.abs(character.getPositionOnMap().x - getPositionOnMap().x) < 600) {
+                        if (Math.abs(character.getPositionOnMap().x - getPositionOnMap().x) < 300) {
+                            target = character;
+                        }
+                        shouldClearTarget = false;
                     }
-                    shouldClearTarget = false;
+                }
+                if (target != null && shouldClearTarget) {
+                    target = null;
                 }
             }
-            if (target != null && shouldClearTarget) {
-                target = null;
-            }
-        }
 
-        if (!affectedByGravity) {
+            if (!affectedByGravity) {
+                if (target != null) {
+                    float distanceX = target.getPositionOnMap().x - getPositionOnMap().x,
+                            distanceY = target.getPositionOnMap().y - target.gGB().height / 2 - getPositionOnMap().y,
+                            factorX = distanceX / (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY),
+                            factorY = distanceY / (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+                    speedX = movementSpeed * factorX;
+                    speedY = movementSpeed * factorY;
+                    if (Keyboard.isKeyPressed(Keyboard.Key.H)) {
+                        System.out.println("Distances: " + distanceX + ", " + distanceY);
+                        System.out.println("Factors: " + factorX + ", " + factorY);
+                        System.out.println("Speeds: " + speedX + ", " + speedY);
+                    }
+                } else {
+                    //Float around
+                    floatingAroundTime += deltaTime.asSeconds();
+                    if (floatingAroundTime >= changeDirectionTime) {
+                        int verticalCorrection = 0;
+                        if (getPositionOnMap().y < 100) verticalCorrection = 1;
+                        speedX = (float) ((Math.random() * 2 - 1) * movementSpeed / Math.sqrt(2));
+                        speedY = (float) ((Math.random() * 2 - 1 + verticalCorrection) * movementSpeed / Math.sqrt(2));
+                        floatingAroundTime -= changeDirectionTime;
+                    }
+                }
+                if (speedX < 0) direction = -1;
+            }
+
+            preventBlockCollision(deltaTime);
+
+            //No ankle biting
             if (target != null) {
-                float distanceX = target.getPositionOnMap().x - getPositionOnMap().x,
-                        distanceY = target.getPositionOnMap().y - target.gGB().height / 2 - getPositionOnMap().y,
-                        factorX = distanceX / (float)Math.sqrt(distanceX * distanceX + distanceY * distanceY),
-                        factorY = distanceY / (float)Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-                speedX = movementSpeed * factorX;
-                speedY = movementSpeed * factorY;
-                if (Keyboard.isKeyPressed(Keyboard.Key.H)) {
-                    System.out.println("Distances: " + distanceX + ", " + distanceY);
-                    System.out.println("Factors: " + factorX + ", " + factorY);
-                    System.out.println("Speeds: " + speedX + ", " + speedY);
-                }
-            } else {
-                //Float around
-                floatingAroundTime += deltaTime.asSeconds();
-                if (floatingAroundTime >= changeDirectionTime) {
-                    int verticalCorrection = 0;
-                    if (getPositionOnMap().y < 100) verticalCorrection = 1;
-                    speedX = (float)((Math.random() * 2 - 1) * movementSpeed / Math.sqrt(2));
-                    speedY = (float)((Math.random() * 2 - 1 + verticalCorrection) * movementSpeed / Math.sqrt(2));
-                    floatingAroundTime -= changeDirectionTime;
-                }
-            }
-            if (speedX < 0) direction = -1;
-        }
-
-        preventBlockCollision(deltaTime);
-
-        //No ankle biting
-        if (target != null) {
-            if ((L < target.gGB().left + target.gGB().width && R > target.gGB().left) ||
-                    (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
-                if (T > target.gGB().top + target.gGB().height && speedY < 0) {
-                    if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
-                        speedY = (target.gGB().top + target.gGB().height - T + 1) / deltaTime.asSeconds();
-                        stomp();
-                        target.bounce();
+                if ((L < target.gGB().left + target.gGB().width && R > target.gGB().left) ||
+                        (L + speedX * deltaTime.asSeconds() < target.gGB().left + target.gGB().width && R + speedX * deltaTime.asSeconds() > target.gGB().left)) {
+                    if (T > target.gGB().top + target.gGB().height && speedY < 0) {
+                        if (-speedY * deltaTime.asSeconds() > T - (target.gGB().top + target.gGB().height)) {
+                            speedY = (target.gGB().top + target.gGB().height - T + 1) / deltaTime.asSeconds();
+                            stomp();
+                            target.bounce();
+                        }
                     }
                 }
             }
-        }
-        if (speedY < 0) onGround = false;
+            if (speedY < 0) onGround = false;
 
-        setScale(-direction * Math.abs(getScale().x), getScale().y);
-        mainBody.setTextureRect(new IntRect(0, animationFrame * 16, 32, 16));
-        moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
+            setScale(-direction * Math.abs(getScale().x), getScale().y);
+            mainBody.setTextureRect(new IntRect(0, animationFrame * 16, 32, 16));
+            moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
+        }
     }
 
     @Override

@@ -98,10 +98,6 @@ public class LevelLaunchHUD extends HUD {
         cancelButton.setScale(2, 2);
         cancelButton.setPosition(window.getSize().x / 2f, window.getSize().y / 2f + background.getSize().y * 3 / 8);
 
-        add(background);
-        add(frame);
-        add(name);
-        add(launchButton);
-        add(cancelButton);
+        add(background, frame, name, launchButton, cancelButton);
     }
 }

@@ -16,8 +16,8 @@ public class CancelButton extends GameButton {
 
     @Override
     public void clickAction() {
-        GameContext.getInstance().getWindow().setHUD(HUD.empty());
-        if (GameContext.getInstance().getWindow().getScene() instanceof final LoadedWorldScene worldScene) {
+        window.setHUD(HUD.empty());
+        if (window.getScene() instanceof final LoadedWorldScene worldScene) {
             worldScene.getPlayerCharacter().enableMovement();
             worldScene.getPlayerCharacter().cancelButtonPress();
         }

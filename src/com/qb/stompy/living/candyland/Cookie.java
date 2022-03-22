@@ -24,36 +24,38 @@ public class Cookie extends Enemy implements AnimatedEntity {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        if (currentHp <= 0) kill();
-        if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
+        if (!getLevelScene().isPaused()) {
+            if (currentHp <= 0) kill();
+            if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
 
-        //Loop Variables
-        float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
+            //Loop Variables
+            float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
 
-        //Target player
-        if (getLevelScene() != null) {
-            if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead())
-                target = getLevelScene().getPlayerCharacter();
-            else
-                target = null;
-        }
+            //Target player
+            if (getLevelScene() != null) {
+                if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead())
+                    target = getLevelScene().getPlayerCharacter();
+                else
+                    target = null;
+            }
 
-        preventBlockCollision(deltaTime);
-        moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
+            preventBlockCollision(deltaTime);
+            moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
 
-        //Animation
-        if (stomped)
-            timeSinceStomped += deltaTime.asSeconds();
-        if (timeSinceStomped > 0) {
-            mainBody.setTextureRect(new IntRect(16, 0, 16, 15));
-            if (timeSinceStomped >= 0.25 * recoveryTime) {
-                mainBody.setTextureRect(new IntRect(32, 0, 16, 15));
-                if (timeSinceStomped >= 0.75 * recoveryTime) {
-                    mainBody.setTextureRect(new IntRect(48, 0, 16, 15));
-                    if (timeSinceStomped >= recoveryTime) {
-                        mainBody.setTextureRect(new IntRect(0, 0, 16, 15));
-                        timeSinceStomped = 0;
-                        stomped = false;
+            //Animation
+            if (stomped)
+                timeSinceStomped += deltaTime.asSeconds();
+            if (timeSinceStomped > 0) {
+                mainBody.setTextureRect(new IntRect(16, 0, 16, 15));
+                if (timeSinceStomped >= 0.25 * recoveryTime) {
+                    mainBody.setTextureRect(new IntRect(32, 0, 16, 15));
+                    if (timeSinceStomped >= 0.75 * recoveryTime) {
+                        mainBody.setTextureRect(new IntRect(48, 0, 16, 15));
+                        if (timeSinceStomped >= recoveryTime) {
+                            mainBody.setTextureRect(new IntRect(0, 0, 16, 15));
+                            timeSinceStomped = 0;
+                            stomped = false;
+                        }
                     }
                 }
             }

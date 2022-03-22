@@ -18,7 +18,7 @@ public class Character extends LivingGameObject implements AnimatedEntity {
     private int frame = 0, idleFrame = 0, idleFrame2 = 0;
     private final int animationFrames = 8;
     private float speedX = 0, speedY = 0, timeSinceBoing = 0, jumpPressedTime = 0, animationTime = 0, idleTime = 0, idleActionTime = 0;
-    private final float movementSpeed = 120, jumpStrength = 500, boingStrength = jumpStrength / (float) Math.sqrt(2), animationLoopTime = 1.6f, idleTimeTillAction = 5;
+    private final float movementSpeed = 120, jumpStrength = 540, boingStrength = jumpStrength / (float) Math.sqrt(2), animationLoopTime = 1.6f, idleTimeTillAction = 5;
     private boolean sprinting = false, sprintReleased = false, boinged = false, isIdle = false, idleAction = false;
     private boolean leftPressed = false, rightPressed = false, jumpPressed = false, sprintPressed = false;
     private boolean[] idleActions;
@@ -91,9 +91,11 @@ public class Character extends LivingGameObject implements AnimatedEntity {
             idleActions = new boolean[]{false, false, false};
         } else jumpPressedTime = 0;
         if (sprintPressed) {
-            if (sprintReleased)
-                speedX = 2 * speedX;
-            sprinting = true;
+            if (sprinting || onGround) {
+                if (sprintReleased)
+                    speedX = 2 * speedX;
+                sprinting = true;
+            }
         } else {
             if (sprinting) speedX *= 0.5;
             sprinting = false;
@@ -163,76 +165,77 @@ public class Character extends LivingGameObject implements AnimatedEntity {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        frame = 0;
-        idleFrame = 0;
-        idleFrame2 = 0;
-        isIdle = true;
+        if (!getLevelScene().isPaused()) {
+            frame = 0;
+            idleFrame = 0;
+            idleFrame2 = 0;
+            isIdle = true;
 
-        //Controls
-        steerCharacter(deltaTime);
+            //Controls
+            steerCharacter(deltaTime);
 
-        //Updating data
-        if (currentHp <= 0) kill();
-        if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
-        if (boinged) {
-            timeSinceBoing += deltaTime.asSeconds();
-            if (timeSinceBoing >= 0.1) {
-                boinged = false;
-                timeSinceBoing = 0;
+            //Updating data
+            if (currentHp <= 0) kill();
+            if (affectedByGravity) speedY += 1000 * deltaTime.asSeconds();
+            if (boinged) {
+                timeSinceBoing += deltaTime.asSeconds();
+                if (timeSinceBoing >= 0.1) {
+                    boinged = false;
+                    timeSinceBoing = 0;
+                }
             }
-        }
-        if (recentlyDamaged) {
-            invincibilityTime -= deltaTime.asSeconds();
-            if (invincibilityTime < 0) invincibilityTime = 0;
-            mainBody.setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
-            if (invincibilityTime == 0) {
-                recentlyDamaged = false;
-                canBeDamaged = true;
-                invincibilityTime = 1;
+            if (recentlyDamaged) {
+                invincibilityTime -= deltaTime.asSeconds();
+                if (invincibilityTime < 0) invincibilityTime = 0;
+                mainBody.setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
+                if (invincibilityTime == 0) {
+                    recentlyDamaged = false;
+                    canBeDamaged = true;
+                    invincibilityTime = 1;
+                }
             }
-        }
-        animationTime += deltaTime.asSeconds();
-        if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
-        if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
-        idleAction = idleTime >= idleTimeTillAction;
-        if (idleAction) idleActionTime -= deltaTime.asSeconds();
-        if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
-            int randNumb = (int) (15 * Math.random());
-            System.out.println(randNumb);
-            if (randNumb < 10) {
-                idleActionTime = 0.5f;
-                idleActions[0] = true;
-            } else if (randNumb < 14) {
-                idleActionTime = 3.6f;
-                idleActions[1] = true;
-            } else {
-                idleActionTime = 5;
-                idleActions[2] = true;
+            animationTime += deltaTime.asSeconds();
+            if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
+            if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
+            idleAction = idleTime >= idleTimeTillAction;
+            if (idleAction) idleActionTime -= deltaTime.asSeconds();
+            if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
+                int randNumb = (int) (15 * Math.random());
+                System.out.println(randNumb);
+                if (randNumb < 10) {
+                    idleActionTime = 0.5f;
+                    idleActions[0] = true;
+                } else if (randNumb < 14) {
+                    idleActionTime = 3.6f;
+                    idleActions[1] = true;
+                } else {
+                    idleActionTime = 5;
+                    idleActions[2] = true;
+                }
             }
-        }
 
-        //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        animateIdle();
-        mainBody.setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            animateIdle();
+            mainBody.setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
 
-        //Loop Variables
-        float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
-        int animationFrame = (int)(animationFrames * animationTime / animationLoopTime);
-        if (speedX == 0) animationFrame = 0;
+            //Loop Variables
+            float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
+            int animationFrame = (int) (animationFrames * animationTime / animationLoopTime);
+            if (speedX == 0) animationFrame = 0;
 
-        //Out of map prevention
-        if (-(L + speedX * deltaTime.asSeconds()) >= 0) {
-            speedX = -L / deltaTime.asSeconds();
-        }
-        if (R + speedX * deltaTime.asSeconds() >= window.getSize().x) {
-            speedX = (window.getSize().x - R) / deltaTime.asSeconds();
-        }
+            //Out of map prevention
+            if (-(L + speedX * deltaTime.asSeconds()) >= 0) {
+                speedX = -L / deltaTime.asSeconds();
+            }
+            if (R + speedX * deltaTime.asSeconds() >= window.getSize().x) {
+                speedX = (window.getSize().x - R) / deltaTime.asSeconds();
+            }
 
-        //Checking collisions
-        for (final Drawable object : window.getScene()) {
-            //Enemies collision
-            if (object instanceof final Enemy en) {
-                if (en instanceof final RoundEnemy ren) {
+            //Checking collisions
+            for (final Drawable object : window.getScene()) {
+                //Enemies collision
+                if (object instanceof final Enemy en) {
+                    if (en instanceof final RoundEnemy ren) {
                     /*float X = ren.gGB().left + ren.gGB().width / 2, L2 = X - ren.getRadius(), R2 = X + ren.getRadius(),
                             Y = ren.gGB().top + ren.gGB().height / 2, B2 = Y + ren.getRadius(), T2 = Y - ren.getRadius();
                     FloatRect intersection = gGB().intersection(ren.gGB());
@@ -270,66 +273,66 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                             damage(1);
                         }
                     }*/
-                    float L2 = ren.getSquareHitbox().getPosition().x, R2 = L2 + ren.getSquareHitbox().getSize().x, T2 = ren.getSquareHitbox().getPosition().y;
-                    if (L < R2 && R > L2) {
-                        if (ren.canBeStomped() && ren.canBeDamaged) {
-                            if (B < T2 && speedY * deltaTime.asSeconds() >= T2 - B || B == T2) {
-                                speedY = -boingStrength;
-                                ren.stomp();
+                        float L2 = ren.getSquareHitbox().getPosition().x, R2 = L2 + ren.getSquareHitbox().getSize().x, T2 = ren.getSquareHitbox().getPosition().y;
+                        if (L < R2 && R > L2) {
+                            if (ren.canBeStomped() && ren.canBeDamaged) {
+                                if (B < T2 && speedY * deltaTime.asSeconds() >= T2 - B || B == T2) {
+                                    speedY = -boingStrength;
+                                    ren.stomp();
+                                }
                             }
                         }
-                    }
-                    if (this.intersects(ren) && ren.isActive()) {
-                        damage(1);
-                    }
-                } else {
-                    float L2 = en.gGB().left, R2 = L2 + en.gGB().width, T2 = en.gGB().top;
-                    if (L < R2 && R > L2) {
-                        if (en.canBeStomped() && en.canBeDamaged) {
-                            if (B == T2 || (B < T2 && ((speedY - en.getSpeed().y) * deltaTime.asSeconds() >= T2 - B || speedY * deltaTime.asSeconds() >= T2 - B))) {
-                                bounce();
-                                if (en instanceof Cookie) boinged = true;
-                                en.stomp();
+                        if (this.intersects(ren) && ren.isActive()) {
+                            damage(1);
+                        }
+                    } else {
+                        float L2 = en.gGB().left, R2 = L2 + en.gGB().width, T2 = en.gGB().top;
+                        if (L < R2 && R > L2) {
+                            if (en.canBeStomped() && en.canBeDamaged) {
+                                if (B == T2 || (B < T2 && ((speedY - en.getSpeed().y) * deltaTime.asSeconds() >= T2 - B || speedY * deltaTime.asSeconds() >= T2 - B))) {
+                                    bounce();
+                                    if (en instanceof Cookie) boinged = true;
+                                    en.stomp();
+                                }
                             }
                         }
+                        if (this.intersects(en) && en.isActive()) {
+                            damage(1);
+                        }
                     }
-                    if (this.intersects(en) && en.isActive()) {
-                        damage(1);
+                }
+                //Terrain collision
+                if (object instanceof final SolidBlock sBlock) {
+                    float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
+                    //Vertical Collision
+                    if (L < R2 && R > L2) {
+                        if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
+                            speedY = (B2 - T) / deltaTime.asSeconds();
+                        }
+                        if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
+                            speedY = (T2 - B) / deltaTime.asSeconds();
+                            onGround = true;
+                        }
+                    }
+                    //Horizontal Collision
+                    if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
+                        if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
+                            speedX = (R2 - L) / deltaTime.asSeconds();
+                        }
+                        if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
+                            speedX = (L2 - R) / deltaTime.asSeconds();
+                        }
                     }
                 }
             }
-            //Terrain collision
-            if (object instanceof final SolidBlock sBlock) {
-                float L2 = sBlock.gGB().left, R2 = L2 + sBlock.gGB().width, T2 = sBlock.gGB().top, B2 = T2 + sBlock.gGB().height;
-                //Vertical Collision
-                if (L < R2 && R > L2) {
-                    if (T >= B2 && -speedY * deltaTime.asSeconds() >= T - B2) {
-                        speedY = (B2 - T) / deltaTime.asSeconds();
-                    }
-                    if (B <= T2 && speedY * deltaTime.asSeconds() >= T2 - B) {
-                        speedY = (T2 - B) / deltaTime.asSeconds();
-                        onGround = true;
-                    }
-                }
-                //Horizontal Collision
-                if ((T < B2 && B > T2) || (T + speedY * deltaTime.asSeconds() < B2 && B + speedY * deltaTime.asSeconds() > T2)) {
-                    if (L >= R2 && -speedX * deltaTime.asSeconds() >= L - R2) {
-                        speedX = (R2 - L) / deltaTime.asSeconds();
-                    }
-                    if (R <= L2 && speedX * deltaTime.asSeconds() >= L2 - R) {
-                        speedX = (L2 - R) / deltaTime.asSeconds();
-                    }
-                }
-            }
-        }
 
-        //Last updates
-        if (speedY > 0) onGround = false;
-        if (!onGround) animationFrame = 0;
-        if (!idleAction) mainBody.setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
+            //Last updates
+            if (speedY > 0) onGround = false;
+            if (!onGround) animationFrame = 0;
+            if (!idleAction) mainBody.setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
 
-        if(/*character got to a certain point on map*/getPositionOnMap().x >= getLevelScene().getMapSize().x - 200) {
-            //TODO update conditions to match new readers
+            if (/*character got to a certain point on map*/getPositionOnMap().x >= getLevelScene().getMapSize().x - 200) {
+                //TODO update conditions to match new readers
 //            //unlock the next path in the same world
 //            unlockPath(getLevelScene().getWorldNumber(), getLevelScene().getLevelNumber() + 1);
 //            if (getLevelScene().getLevelNumber() == assets.<DataAsset>get("levels").convertTo(LevelReader.class).getWorlds().get(getLevelScene().getWorldNumber()).getLevels().size() - 1) {
@@ -339,12 +342,13 @@ public class Character extends LivingGameObject implements AnimatedEntity {
 //
 //                }
 //            }
-            //return to the world
-            int targetLevel = getLevelScene().getLevelNumber();
-            window.setScene(new LoadedWorldScene(getLevelScene().getWorldNumber()));
-            window.<LoadedWorldScene>getScene().placeCharacterAtLevel(targetLevel);
-        }
+                //return to the world
+                int targetLevel = getLevelScene().getLevelNumber();
+                window.setScene(new LoadedWorldScene(getLevelScene().getWorldNumber()));
+                window.<LoadedWorldScene>getScene().placeCharacterAtLevel(targetLevel);
+            }
 
-        moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
+            moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
+        }
     }
 }

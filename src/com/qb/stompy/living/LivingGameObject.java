@@ -7,7 +7,8 @@ import org.jsfml.graphics.Drawable;
 import org.jsfml.system.Time;
 
 public abstract class LivingGameObject extends GameObject implements AnimatedEntity {
-    protected float currentHp, invincibilityTime = 0, maxHp = 1, speedX = 0, speedY = 0;
+    protected int currentHp, maxHp = 1;
+    protected float invincibilityTime = 0, speedX = 0, speedY = 0;
     protected boolean dead = false, onGround = false, foundGround = false, affectedByGravity = true, recentlyDamaged = false, canBeDamaged = true;
     protected SolidBlock floor = null;
 
@@ -17,11 +18,15 @@ public abstract class LivingGameObject extends GameObject implements AnimatedEnt
         makeInvincible();
     }
 
-    public float getCurrentHp() {
+    public int getCurrentHp() {
         return currentHp;
     }
 
-    public void setMaxHp(float hp) {
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void setMaxHp(int hp) {
         maxHp = hp;
         currentHp = hp;
     }

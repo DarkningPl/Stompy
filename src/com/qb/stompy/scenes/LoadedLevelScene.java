@@ -1,5 +1,7 @@
 package com.qb.stompy.scenes;
 
+import com.qb.stompy.HUDs.GameOverHUD;
+import com.qb.stompy.HUDs.LevelPauseHUD;
 import com.qb.stompy.dataReaders.World1Reader;
 import com.qb.stompy.dataReaders.World2Reader;
 import com.qb.stompy.dataReaders.WorldReader;
@@ -10,6 +12,7 @@ import com.qb.stompy.objects.GameObject;
 import com.qb.stompy.objects.MapBackground;
 import com.qb.stompy.objects.SolidBlock;
 import com.rubynaxela.kyanite.game.GameContext;
+import com.rubynaxela.kyanite.game.HUD;
 import com.rubynaxela.kyanite.game.Scene;
 import com.rubynaxela.kyanite.game.assets.AssetsBundle;
 import com.rubynaxela.kyanite.game.assets.DataAsset;
@@ -19,42 +22,89 @@ import com.rubynaxela.kyanite.game.gui.Text;
 import com.rubynaxela.kyanite.util.Colors;
 import com.rubynaxela.kyanite.util.Vec2;
 import com.rubynaxela.kyanite.window.Window;
+import com.rubynaxela.kyanite.window.event.KeyListener;
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.Drawable;
+import org.jsfml.graphics.RectangleShape;
 import org.jsfml.system.Vector2f;
+import org.jsfml.window.event.KeyEvent;
+
+import java.util.ArrayList;
 
 public class LoadedLevelScene extends Scene {
-    private final int levelNumber, worldNumber;
-    private float timePassed = 0;
-    private final float levelTime;
-    private boolean paused = false;
+    private int playerHP;
+    private final int levelNumber, worldNumber, bestScore, levelTime;
+    private float timePassed = 0, timeSinceCharacterDeath = 0;
+    private final float timeFromDeathToHUD = 2.0f;
+    private boolean paused = false, isPauseHUD = false, isOverHUD = false, isUpPressed = false, isDownPressed = false, isEscPressed = false,
+            wasUpReleased = false, wasDownReleased = false, wasEscReleased = false;
     private final Vector2f mapSize;
     private Vector2f mapOffset = Vec2.f(0, 0);
     private final Text timeVal = new Text();
     private final Font mc_font = new Font(getContext().getAssetsBundle().get("font_mc"), 24);
     private final Character character = new Character();
+    private final ArrayList<RectangleShape> playerHearts;
+    private LevelPauseHUD pauseHUD = null;
+    private GameOverHUD overHUD = null;
 
     public LoadedLevelScene(int world, int level) {
-        levelTime = 400;
+        AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
         levelNumber = level;
         worldNumber = world;
-        AssetsBundle assets = GameContext.getInstance().getAssetsBundle();
         float size_x, size_y;
         switch (world) {
             case 0 -> {
-                size_x = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(level).getSize().x;
-                size_y = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(level).getSize().y;
+                World1Reader.W1Level w1Level = assets.<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(level);
+                size_x = w1Level.getSize().x;
+                size_y = w1Level.getSize().y;
+                bestScore = w1Level.getBestScore();
+                levelTime = w1Level.getTime();
             }
             case 1 -> {
-                size_x = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getLevels().get(level).getSize().x;
-                size_y = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getLevels().get(level).getSize().y;
+                World2Reader.W2Level w2Level = assets.<DataAsset>get("world_1").convertTo(World2Reader.class).getLevels().get(level);
+                size_x = w2Level.getSize().x;
+                size_y = w2Level.getSize().y;
+                bestScore = w2Level.getBestScore();
+                levelTime = w2Level.getTime();
             }
             default -> {
                 size_x = 0;
                 size_y = 0;
+                bestScore = 0;
+                levelTime = 0;
             }
         }
         mapSize = Vec2.f(size_x, size_y);
+        playerHP = character.getCurrentHp();
+        playerHearts = new ArrayList<>();
+        Texture heartTexture = assets.get("texture_heart");
+        for (int i = 0; i < character.getMaxHp(); i++) {
+            RectangleShape heart = heartTexture.createRectangleShape();
+            heart.setSize(Vec2.f(32, 48));
+            heart.setPosition(16 + 36 * i, 16);
+            heart.setFillColor(Colors.RED);
+            playerHearts.add(heart);
+        }
+
+        getContext().getWindow().addKeyListener(new KeyListener() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.key) {
+                    case DOWN -> isDownPressed = true;
+                    case UP -> isUpPressed = true;
+                    case ESCAPE -> isEscPressed = true;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                switch (e.key) {
+                    case DOWN -> isDownPressed = false;
+                    case UP -> isUpPressed = false;
+                    case ESCAPE -> isEscPressed = false;
+                }
+            }
+        });
     }
 
     public Vector2f getMapSize() {
@@ -176,28 +226,39 @@ public class LoadedLevelScene extends Scene {
         bringToTop(character);
 
         //Level data and such
-        Text levelTextField = new Text("Level", mc_font);
-        levelTextField.setCharacterSize(32);
-        levelTextField.setColor(Colors.SADDLE_BROWN);
-        levelTextField.setAlignment(Text.Alignment.TOP_CENTER);
-        levelTextField.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 32);
+        Text textLevel = new Text("Level", mc_font);
+        textLevel.setCharacterSize(32);
+        textLevel.setColor(Colors.SADDLE_BROWN);
+        textLevel.setAlignment(Text.Alignment.TOP_CENTER);
+        textLevel.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 32);
 
         Text levelNumber = new Text((getWorldNumber() + 1) + " - " + (getLevelNumber() + 1), mc_font);
         levelNumber.setColor(Colors.SADDLE_BROWN);
         levelNumber.setAlignment(Text.Alignment.TOP_CENTER);
         levelNumber.setPosition(GameContext.getInstance().getWindow().getSize().x / 2f, 80);
 
-        Text time = new Text("TIME:", mc_font);
-        time.setAlignment(Text.Alignment.CENTER_RIGHT);
-        time.setColor(Colors.SADDLE_BROWN);
-        time.setPosition(788, 40);
+        Text textTime = new Text("TIME:", mc_font);
+        textTime.setAlignment(Text.Alignment.CENTER_RIGHT);
+        textTime.setColor(Colors.SADDLE_BROWN);
+        textTime.setPosition(788, 40);
 
         timeVal.setFont(mc_font);
         timeVal.setAlignment(Text.Alignment.CENTER_RIGHT);
         timeVal.setColor(Colors.SADDLE_BROWN);
         timeVal.setPosition(788, 70);
 
-        add(levelTextField, levelNumber, time, timeVal);
+        Text textBestScore = new Text("BEST SCORE:", mc_font);
+        textBestScore.setAlignment(Text.Alignment.CENTER_RIGHT);
+        textBestScore.setColor(Colors.SADDLE_BROWN);
+        textBestScore.setPosition(788, 100);
+
+        Text bestScoreVal = new Text("" + bestScore, mc_font);
+        bestScoreVal.setAlignment(Text.Alignment.CENTER_RIGHT);
+        bestScoreVal.setColor(Colors.SADDLE_BROWN);
+        bestScoreVal.setPosition(788, 130);
+
+        for (RectangleShape h : playerHearts) add(h);
+        add(textLevel, levelNumber, textTime, timeVal, textBestScore, bestScoreVal);
     }
 
     @Override
@@ -227,6 +288,7 @@ public class LoadedLevelScene extends Scene {
                 if (obj instanceof final GameObject gameObject) {
                     gameObject.setPosition(Vec2.subtract(gameObject.getPositionOnMap(), mapOffset));
                     if (gameObject.gGB().top > getMapSize().y || gameObject.gGB().left > getMapSize().x || gameObject.gGB().left + gameObject.gGB().width < 0 - mapOffset.x) {
+                        if (gameObject instanceof final LivingGameObject livingGameObject) livingGameObject.damage(livingGameObject.getCurrentHp());
                         scheduleToRemove(gameObject);
                     }
                     if (gameObject instanceof final LivingGameObject livingGameObject) {
@@ -247,8 +309,62 @@ public class LoadedLevelScene extends Scene {
                 }
             }
 
+            //Update hearts based on player health update
+            if (playerHP != character.getCurrentHp()) {
+                if (playerHP > character.getCurrentHp()) {
+                    for (int i = character.getCurrentHp(); i < playerHP; i++) {
+                        playerHearts.get(i).setFillColor(Colors.DIM_GRAY);
+                    }
+                } else {
+                    for (int i = playerHP; i < character.getCurrentHp(); i++) {
+                        playerHearts.get(i).setFillColor(Colors.RED);
+                    }
+                }
+                playerHP = character.getCurrentHp();
+            }
+
+            if (character.isDead()) timeSinceCharacterDeath += getDeltaTime().asSeconds();
             timePassed += getDeltaTime().asSeconds();
-            timeVal.setText("" + (int)(levelTime - (int)timePassed));
+            timeVal.setText("" + (levelTime - (int)timePassed));
+            if (timeSinceCharacterDeath >= timeFromDeathToHUD) {
+                overHUD = new GameOverHUD(worldNumber, levelNumber);
+                window.setHUD(overHUD);
+                isOverHUD = true;
+                pause();
+            }
         }
+        if (isOverHUD) {
+            if (isUpPressed && wasUpReleased) {
+                overHUD.selectOptionAbove();
+            }
+            if (isDownPressed && wasDownReleased) {
+                overHUD.selectOptionBelow();
+            }
+        } else {
+            if (isEscPressed && wasEscReleased) {
+                if (isPauseHUD) {
+                    window.setHUD(HUD.empty());
+                    pauseHUD = null;
+                    isPauseHUD = false;
+                    unpause();
+                } else {
+                    pauseHUD = new LevelPauseHUD(worldNumber, levelNumber);
+                    window.setHUD(pauseHUD);
+                    isPauseHUD = true;
+                    pause();
+                }
+            }
+            if (isPauseHUD) {
+                if (isUpPressed && wasUpReleased) {
+                    pauseHUD.selectOptionAbove();
+                }
+                if (isDownPressed && wasDownReleased) {
+                    pauseHUD.selectOptionBelow();
+                }
+            }
+        }
+        wasUpReleased = !isUpPressed;
+        wasDownReleased = !isDownPressed;
+        wasEscReleased = !isEscPressed;
     }
 }

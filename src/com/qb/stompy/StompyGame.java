@@ -2,6 +2,7 @@ package com.qb.stompy;
 
 import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.scenes.LoadedWorldScene;
+import com.qb.stompy.scenes.MainMenuScene;
 import com.rubynaxela.kyanite.game.Game;
 import com.rubynaxela.kyanite.game.assets.*;
 import com.rubynaxela.kyanite.util.data.DataFile;
@@ -33,6 +34,8 @@ public class StompyGame extends Game {
         assets.register("texture_brick", new Texture("assets/images/brick.png"));
         assets.register("texture_meadow", new Texture("assets/images/meadow.png"));
         assets.register("texture_blocks", new TextureAtlas("assets/images/blocks.png"));
+        assets.register("texture_heart", new Texture("assets/images/simple_heart.png"));
+        assets.register("texture_blurr", new Texture("assets/images/blurr.png"));
 
         assets.register("texture_map_point", new Texture("assets/images/map_point.png"));
         assets.register("texture_map_path", new TextureAtlas("assets/images/map_path.png"));
@@ -41,7 +44,7 @@ public class StompyGame extends Game {
 
         assets.register("font_mc", new FontFace("assets/fonts/Minecraftia-Regular.ttf"));
 
-        assets.register("worlds", new DataAsset("assets/data/worlds_data.json"));
+        assets.register("worlds", new DataAsset("savedata/worlds_data.json"));
         final ProgressReader.PRLastLevel lastLevel = assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getLastCompletedLevel();
         final List<ProgressReader.PRWorld> worlds = assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds();
         for (int i = 0; i < worlds.size(); i++) {
@@ -68,12 +71,13 @@ public class StompyGame extends Game {
         //dat.append("" + 32);
         //System.out.println(dat.read());
 
-        window.setScene(new LoadedWorldScene(0));
+//        window.setScene(new LoadedWorldScene(0));
 
-        window.setScene(new LoadedWorldScene(lastLevel.worldNumber));
-        if (lastLevel.levelNumber >= 1) window.<LoadedWorldScene>getScene().placeCharacterAtLevel(lastLevel.levelNumber - 1);
+//        window.setScene(new LoadedWorldScene(lastLevel.worldNumber)); if (lastLevel.levelNumber >= 1) window.<LoadedWorldScene>getScene().placeCharacterAtLevel(lastLevel.levelNumber - 1);
 
 //        window.setScene(new LoadedLevelScene(0, 2));
 //        window.setScene(new StompyScene());
+
+        window.setScene(new MainMenuScene());
     }
 }

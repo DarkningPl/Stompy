@@ -15,6 +15,6 @@ public class ExitPromptButton extends GameButton {
 
     @Override
     public void clickAction() {
-        GameContext.getInstance().getWindow().close();
+        window.close();
     }
 }

@@ -33,84 +33,86 @@ public class Chocolate extends Enemy {
 
     @Override
     public void animate(@NotNull Time deltaTime, @NotNull Time elapsedTime) {
-        Scene scene = window.getScene();
-        foundGround = false;
-        float direction = 1, animationSpeed = 2.5f;
-        int animationFrame, model;
+        if (!getLevelScene().isPaused()) {
+            Scene scene = window.getScene();
+            foundGround = false;
+            float direction = 1, animationSpeed = 2.5f;
+            int animationFrame, model;
 
-        //Updating data
-        if (currentHp <= 0) {
-            kill();
-            scene.scheduleToRemove(this);
-            return;
+            //Updating data
+            if (currentHp <= 0) {
+                kill();
+                scene.scheduleToRemove(this);
+                return;
+            }
+            speedY += 1000 * deltaTime.asSeconds();
+            if (recentlyDamaged) {
+                invincibilityTime -= deltaTime.asSeconds();
+                if (invincibilityTime < 0) invincibilityTime = 0;
+                mainBody.setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
+                if (invincibilityTime == 0) {
+                    recentlyDamaged = false;
+                    canBeDamaged = true;
+                    invincibilityTime = 0.5f;
+                }
+            }
+            if (facingLeft) direction = -1;
+            speedX = direction * (walkingSpeed + (5 - getCurrentHp()) * 20);
+
+            //Loop Variables
+            float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
+
+            //Target player
+            if (getLevelScene() != null) {
+                if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead())
+                    target = getLevelScene().getPlayerCharacter();
+                else
+                    target = null;
+            }
+
+            //Out of map prevention
+            if (getLevelScene() != null) {
+                if (-(L + speedX * deltaTime.asSeconds()) >= getLevelScene().getMapOffset().x) {
+                    speedX = (-L - getLevelScene().getMapOffset().x) / deltaTime.asSeconds();
+                }
+                if (R + speedX * deltaTime.asSeconds() >= getLevelScene().getMapSize().x) {
+                    speedX = (getLevelScene().getMapSize().x - R) / deltaTime.asSeconds();
+                }
+            } else {
+                if (-(L + speedX * deltaTime.asSeconds()) >= 0) {
+                    speedX = -L / deltaTime.asSeconds();
+                }
+                if (R + speedX * deltaTime.asSeconds() >= window.getSize().x) {
+                    speedX = (window.getSize().x - R) / deltaTime.asSeconds();
+                }
+            }
+
+            //Block collisions
+            preventBlockCollision(deltaTime);
+            if (!foundGround) floor = null;
+
+            //Prevent from falling
+            if (floor != null) {
+                //Left edge
+                if (L >= floor.gGB().left && -speedX * deltaTime.asSeconds() >= L - floor.gGB().left) {
+                    speedX = (floor.gGB().left - L) / deltaTime.asSeconds();
+                    facingLeft = false;
+                }
+                //Right edge
+                if (R <= floor.gGB().left + floor.gGB().width && speedX * deltaTime.asSeconds() >= floor.gGB().left + floor.gGB().width - R) {
+                    speedX = (floor.gGB().left + floor.gGB().width - R) / deltaTime.asSeconds();
+                    facingLeft = true;
+                }
+            }
+
+            //Animation
+            model = (int) (getCurrentHp() / 2);
+            animationFrame = (int) (elapsedTime.asSeconds() * animationSpeed) % 2;
+            mainBody.setTextureRect(new IntRect((2 - model) * 18, animationFrame * 34 + (5 - (int) getCurrentHp()) * 6, 18, 34 - (5 - (int) getCurrentHp()) * 6));
+
+            setScale(-direction * Math.abs(getScale().x), getScale().y);
+            moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
         }
-        speedY += 1000 * deltaTime.asSeconds();
-        if (recentlyDamaged) {
-            invincibilityTime -= deltaTime.asSeconds();
-            if (invincibilityTime < 0) invincibilityTime = 0;
-            mainBody.setFillColor(new Color(255, 255, 255, (int) (255 - 127 * Math.sin(invincibilityTime * Math.PI))));
-            if (invincibilityTime == 0) {
-                recentlyDamaged = false;
-                canBeDamaged = true;
-                invincibilityTime = 0.5f;
-            }
-        }
-        if (facingLeft) direction = -1;
-        speedX = direction * (walkingSpeed + (5 - getCurrentHp()) * 20);
-
-        //Loop Variables
-        float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
-
-        //Target player
-        if (getLevelScene() != null) {
-            if (getLevelScene().getPlayerCharacter() != null && !getLevelScene().getPlayerCharacter().isDead())
-                target = getLevelScene().getPlayerCharacter();
-            else
-                target = null;
-        }
-
-        //Out of map prevention
-        if (getLevelScene() != null) {
-            if (-(L + speedX * deltaTime.asSeconds()) >= getLevelScene().getMapOffset().x) {
-                speedX = (-L - getLevelScene().getMapOffset().x) / deltaTime.asSeconds();
-            }
-            if (R + speedX * deltaTime.asSeconds() >= getLevelScene().getMapSize().x) {
-                speedX = (getLevelScene().getMapSize().x - R) / deltaTime.asSeconds();
-            }
-        } else {
-            if (-(L + speedX * deltaTime.asSeconds()) >= 0) {
-                speedX = -L / deltaTime.asSeconds();
-            }
-            if (R + speedX * deltaTime.asSeconds() >= window.getSize().x) {
-                speedX = (window.getSize().x - R) / deltaTime.asSeconds();
-            }
-        }
-
-        //Block collisions
-        preventBlockCollision(deltaTime);
-        if (!foundGround) floor = null;
-
-        //Prevent from falling
-        if (floor != null) {
-            //Left edge
-            if (L >= floor.gGB().left && -speedX * deltaTime.asSeconds() >= L - floor.gGB().left) {
-                speedX = (floor.gGB().left - L) / deltaTime.asSeconds();
-                facingLeft = false;
-            }
-            //Right edge
-            if (R <= floor.gGB().left + floor.gGB().width && speedX * deltaTime.asSeconds() >= floor.gGB().left + floor.gGB().width - R) {
-                speedX = (floor.gGB().left + floor.gGB().width - R) / deltaTime.asSeconds();
-                facingLeft = true;
-            }
-        }
-
-        //Animation
-        model = (int) (getCurrentHp() / 2);
-        animationFrame = (int) (elapsedTime.asSeconds() * animationSpeed) % 2;
-        mainBody.setTextureRect(new IntRect((2 - model) * 18, animationFrame * 34 + (5 - (int) getCurrentHp()) * 6, 18, 34 - (5 - (int) getCurrentHp()) * 6));
-
-        setScale(-direction * Math.abs(getScale().x), getScale().y);
-        moveOnMap(speedX * deltaTime.asSeconds(), speedY * deltaTime.asSeconds());
     }
 
     @Override
