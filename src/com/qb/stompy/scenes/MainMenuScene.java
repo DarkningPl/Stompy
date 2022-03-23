@@ -18,8 +18,8 @@ public class MainMenuScene extends Scene {
     private final ExitPromptButton exitButton;
     public MainMenuScene() {
         ProgressReader.PRLastLevel lastLevel = getContext().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getLastCompletedLevel();
-        launchButton = new WorldLaunchButton(Vec2.f(96, 16), "Start game", lastLevel.worldNumber, lastLevel.levelNumber);
-        exitButton = new ExitPromptButton(Vec2.f(64, 16), "Exit game");
+        launchButton = new WorldLaunchButton(Vec2.f(384, 64), 32, "Start game", Colors.BLACK, lastLevel.worldNumber, lastLevel.levelNumber);
+        exitButton = new ExitPromptButton(Vec2.f(256, 64), 32, "Exit game", Colors.BLACK);
     }
 
     @Override
@@ -36,9 +36,7 @@ public class MainMenuScene extends Scene {
         gameSubtitle.setPosition(windowSize.x / 2f, windowSize.y / 4f);
 
         launchButton.setPosition(Vec2.f(windowSize.x / 2f, windowSize.y * 3 / 5f));
-        launchButton.setScale(4, 4);
 
-        exitButton.setScale(4, 4);
         exitButton.setPosition(windowSize.x / 2f, windowSize.y * 4 / 5f);
 
         add(gameTitle, gameSubtitle, launchButton, exitButton);

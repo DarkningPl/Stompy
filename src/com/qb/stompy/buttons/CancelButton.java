@@ -1,5 +1,6 @@
 package com.qb.stompy.buttons;
 
+import com.qb.stompy.scenes.LoadedLevelScene;
 import com.qb.stompy.scenes.LoadedWorldScene;
 import com.rubynaxela.kyanite.game.GameContext;
 import com.rubynaxela.kyanite.game.HUD;
@@ -20,6 +21,9 @@ public class CancelButton extends GameButton {
         if (window.getScene() instanceof final LoadedWorldScene worldScene) {
             worldScene.getPlayerCharacter().enableMovement();
             worldScene.getPlayerCharacter().cancelButtonPress();
+        }
+        if (window.getScene() instanceof final LoadedLevelScene levelScene) {
+            levelScene.unpause();
         }
     }
 }

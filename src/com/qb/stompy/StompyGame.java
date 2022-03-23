@@ -1,11 +1,10 @@
 package com.qb.stompy;
 
 import com.qb.stompy.dataReaders.ProgressReader;
-import com.qb.stompy.scenes.LoadedWorldScene;
 import com.qb.stompy.scenes.MainMenuScene;
+import com.qb.stompy.util.SaveDataException;
 import com.rubynaxela.kyanite.game.Game;
 import com.rubynaxela.kyanite.game.assets.*;
-import com.rubynaxela.kyanite.util.data.DataFile;
 import com.rubynaxela.kyanite.util.data.JSONDataFile;
 import com.rubynaxela.kyanite.window.Window;
 
@@ -15,9 +14,10 @@ public class StompyGame extends Game {
 
     public static ProgressReader progress = new JSONDataFile("savedata/worlds_data.json").convertTo(ProgressReader.class);
 
-    public StompyGame(){
+    public StompyGame() {
         final AssetsBundle assets = getContext().getAssetsBundle();
         final Window window = getContext().setupWindow(800, 600, "Stompy Game");
+        final SaveDataException bonjour = new SaveDataException("Invalid lastCompetedLevel field in data file!");
 
 
         assets.register("texture_candy", new TextureAtlas("assets/images/candyland/candy.png"));
@@ -48,21 +48,22 @@ public class StompyGame extends Game {
         final ProgressReader.PRLastLevel lastLevel = assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getLastCompletedLevel();
         final List<ProgressReader.PRWorld> worlds = assets.<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds();
         for (int i = 0; i < worlds.size(); i++) {
-            //TODO Jacek help
-//            try {
-//                if (worlds.get(i).getPaths().length != worlds.get(i).getBestScores().length + 1) {
-//                    bruh
-//                }
-//                else{
-//                    if (lastLevel.worldNumber < 0 || lastLevel.worldNumber >= worlds.size()) { also bruh }
-//                    else {
-//                        if (lastLevel.levelNumber < 0 || lastLevel.levelNumber >= worlds.get(lastLevel.worldNumber).getPaths().length) { bruh too }
-//                    }
-//                }
-//            } catch(a bruh) {
-//
-//            }
+            if (worlds.get(i).getPaths().length != worlds.get(i).getBestScores().length + 1) throw new SaveDataException("Number of paths in world " + (i + 1) + " is incorrect relative to the number of levels in that world!");
             assets.register("world_" + i, new DataAsset("assets/data/world_" + i + "_data.json"));
+        }
+        if (lastLevel.worldNumber < 0 || lastLevel.worldNumber >= worlds.size()) throw new SaveDataException("Last world does not match a world in the game data!");
+        else {
+            if (lastLevel.levelNumber < 0 || lastLevel.levelNumber >= worlds.get(lastLevel.worldNumber).getPaths().length) throw new SaveDataException("Last level does not match a world in the game data!");
+            else {
+                for (int w = 0; w < lastLevel.worldNumber; w++) {
+                    for (int l = 0; l < worlds.get(w).getPaths().length; l++) {
+                        if (!worlds.get(w).getPaths()[l]) throw new SaveDataException("Not all previous paths are unlocked!");
+                    }
+                }
+                for (int l = 0; l < lastLevel.levelNumber; l++) {
+                    if (!worlds.get(lastLevel.worldNumber).getPaths()[l]) throw new SaveDataException("Not all previous paths are unlocked!");
+                }
+            }
         }
         assets.register("levels", new DataAsset("assets/data/levels_data.json"));
         //assets.register("character", new DataAsset("assets/data/character_data.json"));
@@ -75,7 +76,7 @@ public class StompyGame extends Game {
 
 //        window.setScene(new LoadedWorldScene(lastLevel.worldNumber)); if (lastLevel.levelNumber >= 1) window.<LoadedWorldScene>getScene().placeCharacterAtLevel(lastLevel.levelNumber - 1);
 
-//        window.setScene(new LoadedLevelScene(0, 2));
+//        window.setScene(new LoadedLevelScene(0, 0));
 //        window.setScene(new StompyScene());
 
         window.setScene(new MainMenuScene());

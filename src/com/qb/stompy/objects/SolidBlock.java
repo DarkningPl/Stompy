@@ -22,7 +22,7 @@ public class SolidBlock extends GameObject {
                 textures[1][0].apply(this.mainBody);
             }
             case "stone_brick" -> {
-                textures[2][0].setTileable(false);
+                textures[2][0].setTileable(true);
                 textures[2][0].apply(this.mainBody);
             }
             case "stone" -> {

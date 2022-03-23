@@ -127,7 +127,7 @@ public class LoadedLevelScene extends Scene {
 
     public void pause() { paused = true; }
 
-    public void unpause() { paused = false; }
+    public void unpause() { paused = false; isPauseHUD = false; }
 
     private void loadLevelFromWorld0() {
         World1Reader.W1Level level = GameContext.getInstance().getAssetsBundle().<DataAsset>get("world_0").convertTo(World1Reader.class).getLevels().get(levelNumber);

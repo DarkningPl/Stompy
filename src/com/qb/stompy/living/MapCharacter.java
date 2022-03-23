@@ -218,8 +218,8 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
     }
 
     private void returnToNearestMapPoint() {
-        float shortest_distance = -1;
         MapPoint point = getWorldScene().getLevelPoints().get(0);
+        float shortest_distance = (float)Math.sqrt(Math.pow(point.gGB().left - gGB().left, 2) + Math.pow(point.gGB().top - gGB().top, 2));
         for (MapPoint p : getWorldScene().getLevelPoints()) {
             float distance = (float)Math.sqrt(Math.pow(p.gGB().left - gGB().left, 2) + Math.pow(p.gGB().top - gGB().top, 2));
             if (shortest_distance < 0) {
@@ -230,7 +230,7 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
                 point = p;
             }
         }
-        setPositionOnMap(point.getPositionOnMap());
+        setPositionOnMap(point.getPositionOnMap().x, point.getPositionOnMap().y + 1);
     }
 
     @Override
@@ -242,8 +242,8 @@ public class MapCharacter extends MapObject implements AnimatedEntity {
         float X = gGB().left + getOrigin().x, Y = gGB().top + getOrigin().y;
 
         if (!isOnAPath()) {
-            returnToNearestMapPoint();
-            System.out.println("OI!");
+//            returnToNearestMapPoint();
+//            System.out.println("OI!");
         }
 
         //Interaction with levels

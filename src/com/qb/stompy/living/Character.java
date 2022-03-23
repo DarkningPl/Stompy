@@ -194,29 +194,6 @@ public class Character extends LivingGameObject implements AnimatedEntity {
                     invincibilityTime = 1;
                 }
             }
-            animationTime += deltaTime.asSeconds();
-            if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
-            if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
-            idleAction = idleTime >= idleTimeTillAction;
-            if (idleAction) idleActionTime -= deltaTime.asSeconds();
-            if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
-                int randNumb = (int) (15 * Math.random());
-                System.out.println(randNumb);
-                if (randNumb < 10) {
-                    idleActionTime = 0.5f;
-                    idleActions[0] = true;
-                } else if (randNumb < 14) {
-                    idleActionTime = 3.6f;
-                    idleActions[1] = true;
-                } else {
-                    idleActionTime = 5;
-                    idleActions[2] = true;
-                }
-            }
-
-            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-            animateIdle();
-            mainBody.setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
 
             //Loop Variables
             float L = gGB().left, R = L + gGB().width, T = gGB().top, B = T + gGB().height;
@@ -327,7 +304,33 @@ public class Character extends LivingGameObject implements AnimatedEntity {
             }
 
             //Last updates
-            if (speedY > 0) onGround = false;
+            if (speedY > 0) {
+                onGround = false;
+                isIdle = false;
+            }
+            animationTime += deltaTime.asSeconds();
+            if (animationTime >= animationLoopTime) animationTime -= animationLoopTime;
+            if (isIdle && !idleAction) idleTime += deltaTime.asSeconds();
+            idleAction = idleTime >= idleTimeTillAction;
+            if (idleAction) idleActionTime -= deltaTime.asSeconds();
+            if (idleAction && idleActionTime < 0 && !(idleActions[0] || idleActions[1] || idleActions[2])) {
+                int randNumb = (int) (15 * Math.random());
+                System.out.println(randNumb);
+                if (randNumb < 10) {
+                    idleActionTime = 0.5f;
+                    idleActions[0] = true;
+                } else if (randNumb < 14) {
+                    idleActionTime = 3.6f;
+                    idleActions[1] = true;
+                } else {
+                    idleActionTime = 5;
+                    idleActions[2] = true;
+                }
+            }
+
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            animateIdle();
+            mainBody.setTextureRect(new IntRect(32 * idleFrame, 32 * idleFrame2, 32, 32));
             if (!onGround) animationFrame = 0;
             if (!idleAction) mainBody.setTextureRect(new IntRect(32 * animationFrame, 32 * frame, 32, 32));
 

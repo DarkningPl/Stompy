@@ -1,6 +1,7 @@
 package com.qb.stompy.buttons;
 
 import com.qb.stompy.scenes.LoadedWorldScene;
+import com.qb.stompy.scenes.MainMenuScene;
 import com.rubynaxela.kyanite.game.HUD;
 import com.rubynaxela.kyanite.util.Colors;
 import org.jsfml.graphics.Color;
@@ -21,8 +22,10 @@ public class WorldLaunchButton extends GameButton {
 
     @Override
     public void clickAction() {
+        int fromMainMenu = 0;
+        if (window.getScene() instanceof MainMenuScene) fromMainMenu = 1;
         window.setHUD(HUD.empty());
         window.setScene(new LoadedWorldScene(worldNumber));
-        if (levelNumber >= 1) window.<LoadedWorldScene>getScene().placeCharacterAtLevel(levelNumber - 1);
+        if (levelNumber >= 1) window.<LoadedWorldScene>getScene().placeCharacterAtLevel(levelNumber - fromMainMenu);
     }
 }

@@ -1,8 +1,6 @@
 package com.qb.stompy.scenes;
 
 import com.qb.stompy.HUDs.LevelLaunchHUD;
-import com.qb.stompy.buttons.ExitPromptButton;
-import com.qb.stompy.dataReaders.LevelReader;
 import com.qb.stompy.dataReaders.ProgressReader;
 import com.qb.stompy.dataReaders.World1Reader;
 import com.qb.stompy.dataReaders.World2Reader;
@@ -23,7 +21,6 @@ import com.rubynaxela.kyanite.window.event.KeyListener;
 import org.jsfml.graphics.Drawable;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.Keyboard;
-import org.jsfml.window.Mouse;
 import org.jsfml.window.event.KeyEvent;
 
 import java.util.ArrayList;
@@ -67,24 +64,16 @@ public class LoadedWorldScene extends Scene {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.key) {
-                    case DOWN -> {
-                        isDownPressed = true;
-                    }
-                    case UP -> {
-                        isUpPressed = true;
-                    }
+                    case DOWN -> isDownPressed = true;
+                    case UP -> isUpPressed = true;
                 }
             }
 
             @Override
             public void keyReleased(KeyEvent e) {
                 switch (e.key) {
-                    case DOWN -> {
-                        isDownPressed = false;
-                    }
-                    case UP -> {
-                        isUpPressed = false;
-                    }
+                    case DOWN -> isDownPressed = false;
+                    case UP -> isUpPressed = false;
                 }
             }
         });
@@ -205,7 +194,7 @@ public class LoadedWorldScene extends Scene {
             if (pointNumber != getContext().getAssetsBundle().<DataAsset>get("worlds").convertTo(ProgressReader.class).getWorlds().size() - 1) {
                 window.setScene(new LoadedWorldScene(getWorldNumber() + 1));
             } else {
-                //play a final cutscene or something
+                //TODO play a final cutscene or something
             }
         }
         //Any level
@@ -397,8 +386,8 @@ public class LoadedWorldScene extends Scene {
                     }
                     else if (obj instanceof final MapPoint g) {
                         System.out.println("Point bounds:");
-                        System.out.println("Left: " + g.gGB().left + ", right: " + (g.gGB().left + g.gGB().width));
-                        System.out.println("Top: " + g.gGB().top + ", bottom: " + (g.gGB().top + g.gGB().height));
+                        System.out.println("Left: " + g.gGB().left + ", right: " + (g.gGB().left + g.mainBody.getSize().x));
+                        System.out.println("Top: " + g.gGB().top + ", bottom: " + (g.gGB().top +g.mainBody.getSize().y));
                     }
                     else if (obj instanceof final MapObject g) {
                         System.out.println("Bounds:");
